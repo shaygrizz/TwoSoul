@@ -14,7 +14,7 @@ function waterTile(map) {
 }
 
 test('вода слышна у озера и затихает вдали', () => {
-  const w = createOverworld('her', null);
+  const w = createOverworld('her', null, { horde: false });
   const t = waterTile(w.map);
   assert.ok(t, 'на карте есть вода');
   const px = (t.tx + 0.5) * CFG.TILE, py = (t.ty + 0.5) * CFG.TILE;
@@ -31,7 +31,7 @@ test('вода слышна у озера и затихает вдали', () =>
 test('шаги: звук только при ходьбе по земле, не в прыжке', () => {
   const played = [];
   audio.play = (name) => played.push(name);
-  const w = createOverworld('her', null);
+  const w = createOverworld('her', null, { horde: false });
   const h = w.hero;
   const move = (dx) => { h.px = h.x; h.x += dx; };
   h.vx = 60; h.z = 0;

@@ -39,6 +39,7 @@ class Audio {
     this.waterTick = 0;
     this.noise = null;
     this.loading = null;
+    this.groanT = 1;
   }
 
   // Браузер разрешает звук только после касания/клика: вешаем разблокировку на первый жест.
@@ -144,6 +145,42 @@ class Audio {
     o.start(now); o.stop(now + 0.14);
   }
 
+  // Рык зомби: низкий пильчатый тон, высота плывёт вниз, фильтр придушивает верха.
+  groan(vol = 0.3) {
+    const c = this.ctx;
+    if (!c || c.state !== 'running') return;
+    const now = c.currentTime;
+    const f0 = 70 + Math.random() * 40;
+    const o = c.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f0, now);
+    o.frequency.linearRampToValueAtTime(f0 * 0.6, now + 0.7);
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(380, now);
+    lp.frequency.linearRampToValueAtTime(200, now + 0.7);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(vol, now + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+    o.connect(lp).connect(g).connect(this.master);
+    o.start(now); o.stop(now + 0.8);
+  }
+
+  // Время от времени рычит ближайший зомби: чем ближе, тем громче. Дальше 150 px не слышно.
+  tickZombies(world, dt) {
+    this.groanT -= dt;
+    if (this.groanT > 0) return;
+    this.groanT = 1 + Math.random() * 1.8;
+    let best = Infinity;
+    for (const m of world.mobs) {
+      if (m.type !== 'zombie' || !m.alive) continue;
+      const d = Math.hypot(m.x - this.listener.x, m.y - this.listener.y);
+      if (d < best) best = d;
+    }
+    if (best < 150) this.groan(0.32 * (1 - best / 150) + 0.04);
+  }
+
   startWater() {
     const w = this.water;
     const buf = this.buffers.get('water_loop');
@@ -209,6 +246,16 @@ class Audio {
       case 'treeLand': this.play('tree_land', { vol: 0.9 * vol, rate: 0.9 }); break;
       case 'treeGrow': this.play('heal', { vol: 0.25 * vol, rate: 1.5 }); break;
       case 'hit': this.play('hit', { vol: 0.8 * vol }); break;
+      // Орда: звуки тише и ниже, иначе очередь по толпе превращается в кашу.
+      case 'zhit': this.play('hit', { vol: 0.35 * vol, rate: 0.8, minGap: 0.05 }); break;
+      case 'zkill': this.play('kill', { vol: 0.5 * vol, rate: 0.7, minGap: 0.07 }); break;
+      case 'zcollapse': this.play('kill', { vol: 0.22 * vol, rate: 0.55, minGap: 0.09 }); break;
+      case 'kingDown':
+        this.play('tree_land', { vol: 1, rate: 0.7 });
+        this.groan(0.5);
+        setTimeout(() => this.play('heal', { vol: 0.9 }), 300);
+        setTimeout(() => this.play('pickup', { vol: 0.8, rate: 1.3 }), 520);
+        break;
       case 'kill': this.play('kill', { vol: 0.9 * vol }); break;
       case 'heroHurt': this.play('hurt', { vol: 0.9 }); break;
       case 'heroDown': this.play('hurt', { vol: 1, rate: 0.7 }); break;

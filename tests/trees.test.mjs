@@ -13,7 +13,7 @@ function steps(w, n, input) {
 }
 
 test('у героя АК и топор, переключение по кругу и слотом', () => {
-  const w = createOverworld('her', null);
+  const w = createOverworld('her', null, { horde: false });
   assert.deepEqual(w.hero.weapons, ['ak', 'axe']);
   assert.equal(w.hero.gun, 'ak');
   steps(w, 1, inp({ switchWeapon: true }));
@@ -23,7 +23,7 @@ test('у героя АК и топор, переключение по кругу
 });
 
 test('топором дерево рубится, падает, даёт дрова', () => {
-  const w = createOverworld('him', null);
+  const w = createOverworld('him', null, { horde: false });
   w.mobs.forEach((m) => { m.alive = false; m.respawnT = 1e9; });
   const t = w.trees.find((x) => x.state === 'up');
   assert.ok(t, 'есть дерево для рубки');
@@ -45,7 +45,7 @@ test('топором дерево рубится, падает, даёт дро�
 });
 
 test('лесную границу рубить нельзя', () => {
-  const w = createOverworld('her', null);
+  const w = createOverworld('her', null, { horde: false });
   const border = w.map.objects.filter((o) => o.border);
   assert.ok(border.length > 0);
   assert.ok(w.trees.every((t) => !t.obj.border));

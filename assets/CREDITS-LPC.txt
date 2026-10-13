@@ -148,3 +148,16 @@ tools/axe (топор в руках и удар)
   Лицензии: OGA-BY 3.0, CC-BY 4.0, CC-BY-SA 3.0+, GPL 2.0+
   https://opengameart.org/content/lpc-hand-tools
   Примечание: original by bluecarrot16, color reduced by JaidynReiman
+
+body/bodies/zombie, head/heads/zombie (зомби)
+  Авторы: Stephen Challener (Redshrike), Johannes Sjölund (wulax), Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), bluecarrot16
+  Лицензии: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+  https://opengameart.org/content/lpc-zombie
+  https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+  https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+
+hat/formal/crown (корона короля зомби)
+  Авторы: DarkwallLKE, Charles Sanchez (CharlesGabriel)
+  Лицензии: CC-BY-SA 3.0, GPL 3.0
+  https://opengameart.org/content/lpc-crown
+  https://opengameart.org/content/lpc-expanded-hats-facial-helmets

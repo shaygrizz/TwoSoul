@@ -1,6 +1,6 @@
 // Service worker: офлайн-кэш. При каждом обновлении игры увеличивай VERSION,
 // тогда старый кэш удалится и игроки получат новую версию.
-const VERSION = 'vdvoem-v18';
+const VERSION = 'vdvoem-v19';
 const FILES = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
   'lib/three.module.min.js', 'lib/three.core.min.js',
@@ -10,7 +10,7 @@ const FILES = [
   'src/render/pixelart.js', 'src/render/scenes.js', 'src/render/view.js',
   'src/trials/fireWater.js',
   'assets/hero_sheet.png', 'assets/hero2_sheet.png', 'assets/hero_portraits.png', 'assets/hero2_portraits.png',
-  'assets/hero_atlas.json', 'assets/hero2_atlas.json', 'assets/weapons.png', 'assets/weapons_atlas.json', 'assets/env.png', 'assets/env_atlas.json', 'assets/icon-192.png', 'assets/icon-512.png',
+  'assets/hero_atlas.json', 'assets/hero2_atlas.json', 'assets/zombie_sheet.png', 'assets/zombie_atlas.json', 'assets/weapons.png', 'assets/weapons_atlas.json', 'assets/env.png', 'assets/env_atlas.json', 'assets/icon-192.png', 'assets/icon-512.png',
   ...['step_grass_1', 'step_grass_2', 'step_path_1', 'step_path_2', 'step_wet_1', 'step_wet_2', 'chop_1', 'chop_2', 'chop_3',
     'tree_crack', 'tree_land', 'swing', 'whoosh', 'hit', 'kill', 'hurt', 'pickup', 'heal', 'switch', 'plate', 'door',
     'water_loop'].map((n) => `assets/sfx/${n}.wav`),

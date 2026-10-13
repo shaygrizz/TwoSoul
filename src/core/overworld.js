@@ -4,12 +4,12 @@ import { OVERWORLD } from './maps.js';
 import { TileMap, OVERWORLD_LEGEND, tileCenter, toTile } from './tilemap.js';
 import { createHero, updateHero, hurtHero, reviveHero, placeHero, equipWeapons } from './hero.js';
 import { createTrees, chopAt, updateTrees, nearestTree } from './trees.js';
-import { createMob, updateMob, damageMob, respawnMob, mobBodyZ } from './mobs.js';
+import { createMob, updateMob, damageMob, respawnMob, reviveZombie, isHorde, mobBodyZ } from './mobs.js';
 import { createPool, makeProjectile, spawnProjectile, updateProjectiles, makePickup } from './projectiles.js';
-import { dist2 } from './physics.js';
+import { dist2, boxBlocked, moveBox } from './physics.js';
 import { makeRng } from './rng.js';
 
-export function createOverworld(heroKind, saved) {
+export function createOverworld(heroKind, saved, opts = {}) {
   const map = new TileMap(OVERWORLD, OVERWORLD_LEGEND);
   const spawnTile = map.mark('spawn');
   const gateTile = map.mark('gate');
@@ -45,7 +45,147 @@ export function createOverworld(heroKind, saved) {
     time: 0,
   };
   w.blocked = (tx, ty) => map.blockedWalk(tx, ty);
+  w.kingDead = Boolean(saved && saved.kingDead);
+  w.king = null;
+  w.view = { hw: 260, hh: 170 };   // половина видимой области в пикселях мира: main обновляет каждый кадр
+  if (opts.horde !== false && !w.kingDead) addHorde(w);
   return w;
+}
+
+// ---------- орда зомби и король ----------
+
+// Случайная проходимая точка карты не ближе minDist к герою; outsideView — ещё и за пределами экрана.
+function pickSpot(w, minDist, outsideView) {
+  const { map, hero, view } = w;
+  const m2 = minDist * minDist, r = CFG.MOBS.zombie.radius - 1;
+  for (let i = 0; i < 40; i++) {
+    const tx = Math.floor(w.rnd() * map.w), ty = Math.floor(w.rnd() * map.h);
+    const p = tileCenter(tx, ty);
+    if (boxBlocked(p.x, p.y, r, 3, w.blocked)) continue;
+    if (dist2(p.x, p.y, hero.x, hero.y) < m2) continue;
+    if (outsideView) {
+      const mg = CFG.HORDE.viewMargin;
+      if (Math.abs(p.x - hero.x) < view.hw + mg && Math.abs(p.y - hero.y) < view.hh + mg) continue;
+    }
+    return p;
+  }
+  return null;
+}
+
+function addHorde(w) {
+  const H = CFG.HORDE;
+  w.horde = { active: true, spawnT: 1, alive: 0 };
+  for (let i = 0; i < H.cap; i++) {
+    const z = createMob('zombie', 0, 0, w.rnd);
+    z.alive = false;
+    w.mobs.push(z);
+  }
+  // Король стоит как можно дальше от места, где начинает герой.
+  const king = createMob('king', 0, 0, w.rnd);
+  let far = null, farD = -1;
+  for (let i = 0; i < 80; i++) {
+    const p = pickSpot(w, 0, false);
+    if (!p) continue;
+    const d = dist2(p.x, p.y, w.spawn.x, w.spawn.y);
+    if (d > farD) { far = p; farD = d; }
+  }
+  const at = far || tileCenter(w.map.w - 6, 4);
+  king.x = king.px = king.homeX = at.x; king.y = king.py = king.homeY = at.y;
+  w.king = king;
+  w.mobs.push(king);
+  // Карта уже заражена с первой секунды: часть орды сразу разбросана вдали от героя.
+  let n = 0;
+  for (const z of w.mobs) {
+    if (z.type !== 'zombie' || n >= H.initial) continue;
+    const p = pickSpot(w, H.minDist + 50, false);
+    if (!p) continue;
+    reviveZombie(z, p.x, p.y, w.rnd);
+    n++;
+  }
+}
+
+function updateHorde(w, dt) {
+  const hd = w.horde;
+  if (!hd || !hd.active) return;
+  hd.spawnT -= dt;
+  if (hd.spawnT > 0) return;
+  hd.spawnT = CFG.HORDE.spawnEvery;
+  let alive = 0, slot = null;
+  for (const m of w.mobs) {
+    if (m.type !== 'zombie') continue;
+    if (m.alive) alive++;
+    else if (!slot && m.collapseT <= 0) slot = m;
+  }
+  hd.alive = alive;
+  if (!slot || alive >= CFG.HORDE.cap) return;
+  const p = pickSpot(w, CFG.HORDE.minDist, true);
+  if (p) reviveZombie(slot, p.x, p.y, w.rnd);
+}
+
+// Зомби не слипаются в одну точку: тех, кто ближе 10 px, мягко раздвигаем.
+function separateZombies(w) {
+  const zs = [];
+  for (const m of w.mobs) if (m.type === 'zombie' && m.alive && m.collapseT <= 0) zs.push(m);
+  const R = 10, r = CFG.MOBS.zombie.radius - 1;
+  for (let i = 0; i < zs.length; i++) {
+    const a = zs[i];
+    for (let j = i + 1; j < zs.length; j++) {
+      const b = zs[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      if (Math.abs(dx) > R || Math.abs(dy) > R) continue;
+      const d = Math.hypot(dx, dy);
+      if (d >= R) continue;
+      const push = (R - d) * 0.25;
+      const nx = d > 0.01 ? dx / d : 1, ny = d > 0.01 ? dy / d : 0;
+      moveBox(a, -nx * push, -ny * push, r, 3, w.blocked);
+      moveBox(b, nx * push, ny * push, r, 3, w.blocked);
+    }
+  }
+}
+
+// После смерти короля зомби рассыпаются один за другим: сначала ближайшие к нему.
+function kingDown(w, king) {
+  w.kingDead = true;
+  if (w.horde) w.horde.active = false;
+  for (const z of w.mobs) {
+    if (z.type !== 'zombie' || !z.alive) continue;
+    z.collapseT = 0.4 + Math.sqrt(dist2(z.x, z.y, king.x, king.y)) / 240 + w.rnd() * 0.25;
+  }
+  w.events.push({ type: 'kingDown', x: king.x, y: king.y, z: 12, idx: w.mobs.indexOf(king) });
+}
+
+function updateCollapse(w, dt) {
+  for (const z of w.mobs) {
+    if (z.type !== 'zombie' || !z.alive || z.collapseT <= 0) continue;
+    z.collapseT -= dt;
+    if (z.collapseT <= 0) {
+      z.alive = false;
+      w.events.push({ type: 'zcollapse', x: z.x, y: z.y, z: 10, mob: 'zombie', idx: w.mobs.indexOf(z) });
+    }
+  }
+}
+
+// Событие попадания и награда. У зомби свои события: их много, и каждый не должен давать заморозку кадра.
+function mobHit(w, m, killed, dx, dy) {
+  const idx = w.mobs.indexOf(m);
+  const horde = isHorde(m);
+  w.events.push({ type: horde ? (killed ? 'zkill' : 'zhit') : (killed ? 'kill' : 'hit'), x: m.x, y: m.y, z: m.z + 6, mob: m.type, dx, dy, idx });
+  if (m.type === 'king') {
+    if (killed) kingDown(w, m);
+    else m.panic = 1.6;
+  }
+  if (killed) {
+    w.kills++;
+    const chance = CFG.MOBS[m.type].drop ?? CFG.HEART_DROP_CHANCE;
+    if (m.type !== 'king' && w.rnd() < chance) dropHeart(w, m.x, m.y);
+  }
+}
+
+// Убрать зомби рядом с точкой возрождения героя, чтобы орда не караулила его на старте.
+function clearAround(w, x, y, r) {
+  for (const m of w.mobs) {
+    if (m.type === 'zombie' && m.alive && dist2(m.x, m.y, x, y) < r * r) m.alive = false;
+  }
 }
 
 // Вернуть героя к воротам (после испытания).
@@ -81,6 +221,7 @@ export function updateOverworld(w, inp, dt) {
 
   if (hero.dead && hero.deadT <= 0) {
     reviveHero(hero, w.spawn.x, w.spawn.y);
+    clearAround(w, w.spawn.x, w.spawn.y, CFG.HORDE.spawnClear);
     w.events.push({ type: 'respawn', x: hero.x, y: hero.y, z: 0 });
   }
 
@@ -94,6 +235,7 @@ export function updateOverworld(w, inp, dt) {
 
   for (const m of w.mobs) {
     if (!m.alive) {
+      if (isHorde(m)) continue;   // зомби появляются из орды, король не возрождается
       m.respawnT -= dt;
       if (m.respawnT <= 0 && dist2(hero.x, hero.y, m.homeX, m.homeY) > 140 * 140) respawnMob(m);
       continue;
@@ -101,12 +243,17 @@ export function updateOverworld(w, inp, dt) {
     updateMob(m, dt, mobCtx);
     // Касание моба ранит героя. Через слайма и гриб можно перепрыгнуть.
     const def = CFG.MOBS[m.type];
+    if (def.harmless) continue;
     const r = def.radius + 5;
     if (dist2(hero.x, hero.y, m.x, m.y) < r * r) {
-      const jumpedOver = m.type !== 'bat' && hero.z > CFG.HERO.jumpSafeZ + m.z;
+      const jumpedOver = m.type !== 'bat' && hero.z > (def.jumpOver ?? CFG.HERO.jumpSafeZ) + m.z;
       if (!jumpedOver) hurtHero(hero, 1, m.x, m.y, emit);
     }
   }
+
+  updateHorde(w, dt);
+  separateZombies(w);
+  updateCollapse(w, dt);
 
   updateProjectiles(w.projectiles, dt, w.map, (p) => w.events.push({ type: 'puff', x: p.x, y: p.y, z: p.z, kind: p.kind }));
   for (const p of w.projectiles) {
@@ -121,11 +268,7 @@ export function updateOverworld(w, inp, dt) {
         p.active = false;
         const l = Math.hypot(p.vx, p.vy) || 1;
         const killed = damageMob(m, p.damage, p.vx / l, p.vy / l);
-        w.events.push({ type: killed ? 'kill' : 'hit', x: m.x, y: m.y, z: m.z + 6, mob: m.type, dx: p.vx / l, dy: p.vy / l, idx: w.mobs.indexOf(m) });
-        if (killed) {
-          w.kills++;
-          if (w.rnd() < CFG.HEART_DROP_CHANCE) dropHeart(w, m.x, m.y);
-        }
+        mobHit(w, m, killed, p.vx / l, p.vy / l);
         break;
       }
     } else if (!hero.dead) {
@@ -196,11 +339,7 @@ function melee(w, h, ax, ay, emit) {
     const r = CFG.MOBS[m.type].radius + M.radius;
     if (dist2(hx, hy, m.x, m.y) > r * r) continue;
     const killed = damageMob(m, M.damage, ax, ay);
-    w.events.push({ type: killed ? 'kill' : 'hit', x: m.x, y: m.y, z: m.z + 6, mob: m.type, dx: ax, dy: ay, idx: w.mobs.indexOf(m) });
-    if (killed) {
-      w.kills++;
-      if (w.rnd() < CFG.HEART_DROP_CHANCE) dropHeart(w, m.x, m.y);
-    }
+    mobHit(w, m, killed, ax, ay);
     hit = true;
   }
   if (chopAt(w, hx, hy, ax)) hit = true;

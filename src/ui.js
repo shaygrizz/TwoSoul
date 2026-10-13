@@ -116,7 +116,7 @@ export class UI {
     touch.classList.toggle('world', mode !== 'trial');
   }
 
-  hideHUD() { $('hud').classList.add('hidden'); $('touch').classList.add('hidden'); }
+  hideHUD() { $('hud').classList.add('hidden'); $('touch').classList.add('hidden'); this.setKingIndicator(false); }
 
   setHearts(hp, max) {
     const key = hp + '/' + max;
@@ -137,7 +137,21 @@ export class UI {
 
   setHeartsVisible(v) { $('hearts').classList.toggle('hidden', !v); }
 
-  setSub(text) { $('hud-sub').textContent = text; }
+  setSub(text) {
+    if (text === this.subText) return;
+    this.subText = text;
+    $('hud-sub').textContent = text;
+  }
+
+  // Указатель на короля у края экрана: корона и стрелка в его сторону (angle — в радианах).
+  setKingIndicator(on, x = 0, y = 0, angle = 0) {
+    const el = $('king-ind');
+    el.classList.toggle('hidden', !on);
+    if (!on) return;
+    el.style.left = Math.round(x) + 'px';
+    el.style.top = Math.round(y) + 'px';
+    el.style.setProperty('--a', angle + 'rad');
+  }
 
   setPortrait(kind, expr) {
     const key = kind + ':' + expr;

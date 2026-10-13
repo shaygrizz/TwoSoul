@@ -7,6 +7,7 @@ const DEFAULTS = () => ({
   x: null, y: null, hp: CFG.HERO.maxHp,
   kills: 0,
   wood: 0, weaponIdx: 0,
+  kingDead: false,
   trials: { fireWater: { done: false, bestTime: null, gems: 0 } },
 });
 
@@ -43,6 +44,7 @@ function migrate(d) {
   if (Number.isInteger(d.kills) && d.kills >= 0) out.kills = d.kills;
   // Поля, добавленные позже, — со значениями по умолчанию, если их нет.
   if (Number.isInteger(d.wood) && d.wood >= 0 && d.wood < 1e6) out.wood = d.wood;
+  if (d.kingDead === true) out.kingDead = true;
   if (Number.isInteger(d.weaponIdx) && d.weaponIdx >= 0 && d.weaponIdx < 8) out.weaponIdx = d.weaponIdx;
   const fw = d.trials && d.trials.fireWater;
   if (fw && typeof fw === 'object') {

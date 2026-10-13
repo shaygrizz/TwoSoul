@@ -323,3 +323,14 @@ body.aiming #game { cursor: none; }
   #modal, #modal .modal-card, #title .title-card, .hearts img.pop { animation: none; }
   .toast, #fade, .btn, .pad-btn, .hero-card { transition: none; }
 }
+
+/* Указатель на короля зомби у края экрана */
+.king-ind { position: fixed; z-index: 15; width: 34px; height: 34px; margin: -17px 0 0 -17px; pointer-events: none; }
+.king-ind.hidden { display: none; }
+.king-ind svg { width: 100%; height: 100%; fill: #ffd451; stroke: #150d22; stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.45)); animation: king-pulse 1s steps(2) infinite; }
+.king-ind svg .band { fill: #b8862a; }
+.king-arrow { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -7px 0 0 -6px; transform-origin: 6px 7px;
+  border-left: 12px solid #ffd451; border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+  transform: rotate(var(--a, 0rad)) translateX(28px); filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.45)); }
+@keyframes king-pulse { 50% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .king-ind svg { animation: none; } }

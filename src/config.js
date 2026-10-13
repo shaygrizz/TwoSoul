@@ -36,7 +36,14 @@ export const CFG = {
     slime:    { hp: 4, radius: 6, speed: 34, aggro: 90, height: 12, knock: 90, respawn: 25 },
     bat:      { hp: 3, radius: 6, speed: 46, aggro: 100, height: 18, knock: 70, respawn: 25, leash: 70 },
     mushroom: { hp: 6, radius: 7, aggro: 115, height: 18, knock: 0, respawn: 30, fireEvery: 2.2 },
+    // Орда: зомби медленные (герой ходит быстрее них), но их очень много. jumpOver — высота прыжка, чтобы перескочить.
+    zombie:   { hp: 2, radius: 6, speed: 26, aggro: 9999, height: 32, knock: 60, respawn: 0, jumpOver: 18, drop: 0.1, variants: 4 },
+    // Король убегает от героя (его скорость меньше бега, поэтому его можно догнать). Сам не кусается.
+    king:     { hp: 30, radius: 8, speed: 60, aggro: 9999, height: 46, knock: 18, respawn: 0, jumpOver: 999, harmless: true, fleeDist: 130, scale: 1.5 },
   },
+  // Орда: cap — сколько зомби живо одновременно, initial — сколько сразу на карте,
+  // spawnEvery — как часто появляется новый, minDist — минимальное расстояние до героя при появлении.
+  HORDE: { cap: 70, initial: 45, spawnEvery: 0.3, minDist: 150, viewMargin: 24, spawnClear: 130 },
   HEART_DROP_CHANCE: 0.3,
 
   VIEW: {
@@ -56,7 +63,7 @@ export const CFG = {
     shake: { shoot: 0.6, hurt: 3.5, kill: 1.6 },
   },
 
-  ASSET_VERSION: 18,     // меняй при замене картинок и атласов: добавляется к адресу и обходит кэш браузера
+  ASSET_VERSION: 19,     // меняй при замене картинок и атласов: добавляется к адресу и обходит кэш браузера
 
   SAVE_KEY: 'vdvoem.save',
   SAVE_VERSION: 1,

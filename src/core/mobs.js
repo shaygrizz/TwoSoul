@@ -1,6 +1,6 @@
 // Мобы: слайм (прыгает к герою), летучая мышь (пикирует), гриб (стреляет спорами).
 import { CFG } from '../config.js';
-import { moveBox, dist2, clamp } from './physics.js';
+import { moveBox, boxBlocked, dist2, clamp } from './physics.js';
 
 export function createMob(type, x, y, rnd) {
   const def = CFG.MOBS[type];
@@ -17,8 +17,27 @@ export function createMob(type, x, y, rnd) {
     angle: rnd() * Math.PI * 2,
     fireT: 1 + rnd(), shootT: 0,
     t: rnd() * 10,
+    // Орда: вариант внешности, разброс скорости, куда поворачивает у препятствий, куда бежит король.
+    variant: type === 'zombie' ? Math.floor(rnd() * def.variants) : 0,
+    speedMul: type === 'zombie' ? 0.8 + rnd() * 0.45 : 1,
+    turn: rnd() < 0.5 ? 1 : -1, dirX: 1, dirY: 0, panic: 0, collapseT: 0,
   };
 }
+
+// Зомби появляется в точке (x, y) вместо погибшего.
+export function reviveZombie(m, x, y, rnd) {
+  const def = CFG.MOBS.zombie;
+  m.alive = true; m.hp = def.hp;
+  m.x = x; m.y = y; m.px = x; m.py = y; m.z = 0; m.pz = 0;
+  m.kx = 0; m.ky = 0; m.vx = 0; m.vy = 0;
+  m.collapseT = 0; m.flash = 0;
+  m.variant = Math.floor(rnd() * def.variants);
+  m.speedMul = 0.8 + rnd() * 0.45;
+  m.turn = rnd() < 0.5 ? 1 : -1;
+  m.t = rnd() * 10;
+}
+
+export function isHorde(m) { return m.type === 'zombie' || m.type === 'king'; }
 
 // ctx: { target (герой или null), blocked, rnd, map, spawnSpore(m, dx, dy) }
 export function updateMob(m, dt, ctx) {
@@ -35,6 +54,8 @@ export function updateMob(m, dt, ctx) {
   if (m.type === 'slime') updateSlime(m, dt, def, tgt, near, ctx);
   else if (m.type === 'bat') updateBat(m, dt, def, tgt, near, ctx);
   else if (m.type === 'mushroom') updateMushroom(m, dt, def, tgt, near, ctx);
+  else if (m.type === 'zombie') updateZombie(m, dt, def, tgt, ctx);
+  else if (m.type === 'king') updateKing(m, dt, def, tgt, ctx);
 
   // Отбрасывание от попаданий.
   if (m.kx !== 0 || m.ky !== 0) {
@@ -48,6 +69,72 @@ export function updateMob(m, dt, ctx) {
   m.x = clamp(m.x, 8, ctx.map.pxW - 8);
   m.y = clamp(m.y, 8, ctx.map.pxH - 8);
   if (!Number.isFinite(m.x) || !Number.isFinite(m.y)) { m.x = m.homeX; m.y = m.homeY; }
+}
+
+// Направление шага с обходом препятствий: если прямо впереди стена, пробуем повернуть на всё больший угол
+// в ту сторону, которую зомби выбрал раньше (так он не мечется туда-сюда).
+const TURNS = [0, 0.6, 1.2, 1.9];
+function steer(m, ax, ay, hw, ctx) {
+  for (const t of TURNS) {
+    const a = t * m.turn, c = Math.cos(a), s = Math.sin(a);
+    const dx = ax * c - ay * s, dy = ax * s + ay * c;
+    if (!boxBlocked(m.x + dx * 9, m.y + dy * 7, hw, 3, ctx.blocked)) return [dx, dy];
+  }
+  return [ax, ay];
+}
+
+function updateZombie(m, dt, def, tgt, ctx) {
+  m.z = 0;
+  if (m.collapseT > 0 || !tgt) { m.vx *= 0.8; m.vy *= 0.8; return; }   // рассыпается или некого преследовать
+  const dx = tgt.x - m.x, dy = tgt.y - m.y;
+  const d = Math.hypot(dx, dy) || 1;
+  const [sx, sy] = steer(m, dx / d, dy / d, def.radius - 1, ctx);
+  const sp = def.speed * m.speedMul * (d < 50 ? 1.15 : 1);
+  const k = Math.min(1, dt * 6);
+  m.vx += (sx * sp - m.vx) * k; m.vy += (sy * sp - m.vy) * k;
+  moveBox(m, m.vx * dt, m.vy * dt, def.radius - 1, 3, ctx.blocked);
+  if (Math.abs(m.vx) > 2) m.facing = m.vx > 0 ? 1 : -1;
+}
+
+// Король: пока герой далеко, стоит. Как только герой ближе fleeDist, бежит прочь, выбирая из 16 направлений
+// то, что ведёт от героя и не упирается в препятствие (чем свободнее путь, тем лучше), и тянется от краёв к центру.
+const KING_DIRS = 16;
+function clearance(m, c, s, hw, ctx) {
+  for (let k = 1; k <= 6; k++) {
+    if (boxBlocked(m.x + c * 6 * k, m.y + s * 6 * k * 0.8, hw, 3, ctx.blocked)) return (k - 1) / 6;
+  }
+  return 1;
+}
+
+function updateKing(m, dt, def, tgt, ctx) {
+  m.z = 0;
+  m.panic = Math.max(0, m.panic - dt);
+  const dx = tgt ? m.x - tgt.x : 0, dy = tgt ? m.y - tgt.y : 0;
+  const d = Math.hypot(dx, dy) || 1;
+  const afraid = tgt && d < def.fleeDist * (m.panic > 0 ? 1.4 : 1);
+  if (!afraid) {
+    const k = Math.min(1, dt * 6);
+    m.vx -= m.vx * k; m.vy -= m.vy * k;
+    m.fleeing = false;
+    return;
+  }
+  m.fleeing = true;
+  const ax = dx / d, ay = dy / d;
+  const cx = ctx.map.pxW / 2 - m.x, cy = ctx.map.pxH / 2 - m.y, cl = Math.hypot(cx, cy) || 1;
+  const hw = def.radius - 1;
+  let bx = ax, by = ay, best = -1e9;
+  for (let i = 0; i < KING_DIRS; i++) {
+    const a = (i / KING_DIRS) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+    const clr = clearance(m, c, s, hw, ctx);
+    const score = c * ax + s * ay + clr * 1.3 - (clr < 0.35 ? 1.2 : 0) + ((c * cx + s * cy) / cl) * 0.25 + (c * m.dirX + s * m.dirY) * 0.3;
+    if (score > best) { best = score; bx = c; by = s; }
+  }
+  m.dirX = bx; m.dirY = by;
+  const sp = def.speed * (m.panic > 0 ? 1.3 : 1) * (d < 50 ? 1.15 : 1);
+  const k = Math.min(1, dt * 8);
+  m.vx += (bx * sp - m.vx) * k; m.vy += (by * sp - m.vy) * k;
+  moveBox(m, m.vx * dt, m.vy * dt, hw, 3, ctx.blocked);
+  if (Math.abs(m.vx) > 2) m.facing = m.vx > 0 ? 1 : -1;
 }
 
 function updateSlime(m, dt, def, tgt, near, ctx) {

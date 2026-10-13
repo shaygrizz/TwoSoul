@@ -5,7 +5,8 @@ import { MapScene, Z_DECAL, Z_SHADOW, Z_TOP, lerp, Squash, treeSprite } from './
 import { CFG } from '../config.js';
 import { T } from '../core/tilemap.js';
 
-const MOB_COLORS = { slime: ['#5cc27a', '#8be39b', '#d7ffe0'], bat: ['#6b4590', '#b48ad8'], mushroom: ['#d4423a', '#ffffff', '#f3e2c4'] };
+const MOB_COLORS = { slime: ['#5cc27a', '#8be39b', '#d7ffe0'], bat: ['#6b4590', '#b48ad8'], mushroom: ['#d4423a', '#ffffff', '#f3e2c4'],
+  zombie: ['#7fae4a', '#4e7a2f', '#b9d98a'], king: ['#ffd451', '#a26cff', '#7fae4a'] };
 const TRAIL = { bulletAk: ['#ffd451', '#ff9a2e'], spore: ['#a374c7'] };
 const SPARK = { bulletAk: ['#fff3b0', '#ffb43a', '#ffffff'], spore: ['#a374c7', '#d4b0f0'] };
 const CHIPS = ['#e8c08a', '#c48a52', '#8a5a33', '#f3dcb0'];
@@ -40,10 +41,14 @@ export class OverworldScene extends MapScene {
     this.heroV = this.heroView(world.hero);
 
     const MOB_GLOW = { slime: [0x7dffb0, 26, 0.32], bat: [0xff5fc8, 18, 0.35], mushroom: [0x8ff4ff, 30, 0.3] };
-    this.mobViews = world.mobs.map((m) => ({
-      spr: this.flashSprite(), shadow: this.shadowSprite(), sq: new Squash(), glow: this.glow(...MOB_GLOW[m.type]),
-      wasAlive: m.alive, deathT: 0, spawnT: 1, prevZ: m.z, prevShootT: 0, dx: 0, dy: 0,
-    }));
+    this.mobViews = world.mobs.map((m) => (m.type === 'zombie' || m.type === 'king'
+      // Орда: свой лист спрайтов, без свечения (их много, телефону так легче).
+      ? { horde: true, spr: this.zombieSprite(), shadow: this.shadowSprite(), sq: new Squash(), glow: null,
+        wasAlive: m.alive, deathT: 0, spawnT: 1, view: 'front', phase: 0 }
+      : {
+        spr: this.flashSprite(), shadow: this.shadowSprite(), sq: new Squash(), glow: this.glow(...MOB_GLOW[m.type]),
+        wasAlive: m.alive, deathT: 0, spawnT: 1, prevZ: m.z, prevShootT: 0, dx: 0, dy: 0,
+      }));
     this.projViews = world.projectiles.map(() => ({ spr: this.atlasSprite(), shadow: this.shadowSprite(), glow: this.glow(0xffffff, 16, 0.55) }));
     this.pickViews = world.pickups.map(() => ({ spr: this.atlasSprite(), shadow: this.shadowSprite(), glow: this.glow(0xff6f9c, 20, 0.45) }));
     this.treeViews = world.trees.map((t) => {
@@ -165,7 +170,54 @@ export class OverworldScene extends MapScene {
     v.shadow.show(true);
   }
 
+  // Зомби и король: четыре вида зомби, король крупнее и в короне. Анимация ходьбы идёт по пройденному пути.
+  drawZombie(m, v, alpha, dt) {
+    v.sq.update(dt);
+    const def = CFG.MOBS[m.type];
+    const big = def.scale || 1;
+    if (m.alive && !v.wasAlive) { v.spawnT = 0; v.sq.hit(1, 1); }   // выползает из земли
+    if (!m.alive && v.wasAlive && v.deathT <= 0) v.deathT = 0.14;
+    v.wasAlive = m.alive;
+    const x = lerp(m.px, m.x, alpha), y = lerp(m.py, m.y, alpha);
+    if (!m.alive) {
+      if (v.deathT > 0) {
+        v.deathT -= dt;
+        const k = (1 + (0.14 - v.deathT) * 3) * big;
+        v.spr.scale(k, k * 0.85);
+        v.spr.mat.userData.flash.value = 1;
+        v.spr.show(true);
+        v.shadow.show(false);
+        if (v.deathT <= 0) v.spr.show(false);
+      } else { v.spr.show(false); v.shadow.show(false); }
+      return;
+    }
+    const speed = Math.hypot(m.vx, m.vy);
+    if (speed > 3) {
+      const ax = Math.abs(m.vx), ay = Math.abs(m.vy);
+      if (v.view === 'side') { if (ay > ax * 1.4) v.view = m.vy < 0 ? 'back' : 'front'; }
+      else if (ax > ay * 1.1) v.view = 'side';
+      else v.view = m.vy < 0 ? 'back' : 'front';
+      v.phase += dt * speed * 0.3;
+    }
+    const meta = this.view.zombieMeta;
+    const frames = this.view.zombieRects[meta.variants[m.type === 'king' ? meta.variants.length - 1 : m.variant % (meta.variants.length - 1)]]['walk_' + v.view];
+    const idx = speed > 3 ? Math.floor(v.phase) % frames.length : 0;
+    v.spr.frame(frames[idx], v.view === 'side' && m.facing < 0);
+    v.spawnT = Math.min(1, v.spawnT + dt / 0.5);
+    const grow = easeOutBack(v.spawnT);
+    v.spr.place(x, y, 0);
+    v.spr.scale(v.sq.sx * big, v.sq.sy * big * grow);
+    // Рассыпающийся зомби мигает белым.
+    const flash = m.collapseT > 0 ? (Math.sin(m.t * 45) > 0 ? 0.8 : 0) : Math.min(1, m.flash / 0.1);
+    v.spr.mat.userData.flash.value = flash;
+    v.spr.show(true);
+    v.shadow.place(x, y + 1, 0, Z_SHADOW);
+    v.shadow.scale(big * Math.min(1, grow), big * Math.min(1, grow));
+    v.shadow.show(true);
+  }
+
   drawMob(m, v, alpha, dt) {
+    if (v.horde) { this.drawZombie(m, v, alpha, dt); return; }
     v.sq.update(dt);
     // Появление: мягко «выпрыгивает» из земли.
     if (m.alive && !v.wasAlive) { v.spawnT = 0; v.sq.hit(1, 1); }
@@ -258,6 +310,21 @@ export class OverworldScene extends MapScene {
         if (v) v.sq.hit(1.3, 0.75);
         break;
       }
+      case 'zhit': {
+        sparks(ps, e.x, e.y, e.z, 4, [...MOB_COLORS[e.mob], '#ffffff'], e.dx || 0, e.dy || 0);
+        const zv = this.mobViews[e.idx];
+        if (zv) zv.sq.hit(1.1, 0.9);
+        break;
+      }
+      case 'zkill':
+        burst(ps, e.x, e.y, e.z, 9, MOB_COLORS[e.mob], 55, 0.5, 2);
+        break;
+      case 'zcollapse':
+        burst(ps, e.x, e.y, e.z, 7, MOB_COLORS.zombie, 40, 0.6, 2, 30);
+        break;
+      case 'kingDown':
+        burst(ps, e.x, e.y, 24, 60, ['#ffd451', '#fff3b0', '#a26cff', '#7fae4a', '#ffffff'], 110, 1.3, 2, 60);
+        break;
       case 'kill':
         burst(ps, e.x, e.y, e.z, 18, MOB_COLORS[e.mob] || ['#ffffff'], 70, 0.6, 2);
         sparks(ps, e.x, e.y, e.z, 8, ['#ffffff'], e.dx || 0, e.dy || 0, 100);

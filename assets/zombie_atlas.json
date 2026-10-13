@@ -1,0 +1,115 @@
+{
+ "frame": [
+  64,
+  64
+ ],
+ "anchor": [
+  32,
+  60
+ ],
+ "king": "king",
+ "variants": [
+  "z0",
+  "z1",
+  "z2",
+  "z3",
+  "king"
+ ],
+ "rows": {
+  "z0": {
+   "walk_front": {
+    "row": 0,
+    "frames": 9
+   },
+   "walk_back": {
+    "row": 1,
+    "frames": 9
+   },
+   "walk_side": {
+    "row": 2,
+    "frames": 9
+   },
+   "hurt": {
+    "row": 3,
+    "frames": 6
+   }
+  },
+  "z1": {
+   "walk_front": {
+    "row": 4,
+    "frames": 9
+   },
+   "walk_back": {
+    "row": 5,
+    "frames": 9
+   },
+   "walk_side": {
+    "row": 6,
+    "frames": 9
+   },
+   "hurt": {
+    "row": 7,
+    "frames": 6
+   }
+  },
+  "z2": {
+   "walk_front": {
+    "row": 8,
+    "frames": 9
+   },
+   "walk_back": {
+    "row": 9,
+    "frames": 9
+   },
+   "walk_side": {
+    "row": 10,
+    "frames": 9
+   },
+   "hurt": {
+    "row": 11,
+    "frames": 6
+   }
+  },
+  "z3": {
+   "walk_front": {
+    "row": 12,
+    "frames": 9
+   },
+   "walk_back": {
+    "row": 13,
+    "frames": 9
+   },
+   "walk_side": {
+    "row": 14,
+    "frames": 9
+   },
+   "hurt": {
+    "row": 15,
+    "frames": 6
+   }
+  },
+  "king": {
+   "walk_front": {
+    "row": 16,
+    "frames": 9
+   },
+   "walk_back": {
+    "row": 17,
+    "frames": 9
+   },
+   "walk_side": {
+    "row": 18,
+    "frames": 9
+   },
+   "hurt": {
+    "row": 19,
+    "frames": 6
+   }
+  }
+ },
+ "fps": {
+  "walk": 8,
+  "hurt": 12
+ },
+ "license": "Universal LPC Spritesheet (CC-BY-SA 3.0 / GPL 3.0 / OGA-BY 3.0), \u0441\u043c. assets/CREDITS-LPC.txt"
+}

@@ -23,6 +23,7 @@ const game = {
   shake: { t: 0, kx: 0, ky: 0 },
   hitstop: 0,
   expr: { name: 'smile', t: 0 }, winkT: 4,
+  victoryT: 0,         // обратный отсчёт до окна победы после смерти короля
 };
 
 let view, ui, input;
@@ -90,7 +91,7 @@ function enterTitle(note = '') {
   document.body.classList.remove('aiming');
   disposeTrial();
   game.worldScene?.dispose();
-  game.world = createOverworld(game.pickedHero, null);
+  game.world = createOverworld(game.pickedHero, null, { horde: false });   // на титульном экране орды нет
   game.worldScene = new OverworldScene(view, game.world);
   game.worldScene.hideHero = true;
   view.setScene(game.worldScene);
@@ -140,8 +141,10 @@ function startGame() {
   ui.showHUD('world');
   ui.setHeartsVisible(true);
   ui.setSub('');
+  game.victoryT = 0;
   persist();
-  if (!game.save.trials.fireWater.done) ui.toast('Испытание ждёт у ворот на северо-востоке', 3200);
+  if (!game.world.kingDead) ui.toast('Орда зомби! Убей короля в короне, и все рассыплются', 4200);
+  else if (!game.save.trials.fireWater.done) ui.toast('Испытание ждёт у ворот на северо-востоке', 3200);
 }
 
 function openGateModal() {
@@ -170,6 +173,7 @@ function enterTrial() {
   input.reset();
   applyScale();
   ui.showHUD('trial');
+  ui.setKingIndicator(false);
   ui.setHeartsVisible(false);
   ui.hideInventory();
   ui.toast(`Ты — ${heroLabel(game.trial.heroes[game.trial.active])}`, 2200);
@@ -279,9 +283,11 @@ function frame(now) {
 function stepWorld(inp) {
   if (inp.pause) { openPause(); return; }
   const w = game.world;
+  w.view = view.halfExtent();   // орда появляется за краем экрана
   updateOverworld(w, inp, CFG.STEP);
   audio.setListener(w.hero.x, w.hero.y);
   audio.tickSteps(w.hero, w.map);
+  audio.tickZombies(w, CFG.STEP);
   for (const e of w.events) {
     game.worldScene.event(e);
     audio.event(e);
@@ -292,6 +298,13 @@ function stepWorld(inp) {
       case 'heroDown': setExpr('hurt', 1.5); addShake(CFG.FEEL.shake.hurt); ui.toast('Ой! Возвращаемся домой…'); break;
       case 'kill': setExpr('happy', 0.8); addShake(CFG.FEEL.shake.kill); game.hitstop = CFG.FEEL.hitStop; break;
       case 'heal': setExpr('happy', 0.8); persist(); break;
+      case 'zkill': addShake(0.5); break;   // зомби много: без заморозки кадра и смены лица
+      case 'kingDown':
+        setExpr('happy', 3); addShake(6);
+        game.save.kingDead = true; persist();
+        ui.toast('Король пал! Орда рассыпается…', 3000);
+        game.victoryT = 3;
+        break;
       case 'chop': addShake(0.9, e.dx, 0); game.hitstop = Math.max(game.hitstop, 0.03); break;
       case 'treeLand': addShake(2.4); break;
       case 'woodGet': setExpr('happy', 0.5); break;
@@ -301,6 +314,13 @@ function stepWorld(inp) {
     }
   }
   w.events.length = 0;
+  if (game.victoryT > 0 && (game.victoryT -= CFG.STEP) <= 0) {
+    ui.modal({
+      title: 'Король пал!',
+      html: '<p>Корона упала, и вся орда рассыпалась в прах.</p><p>Теперь можно спокойно гулять и рубить деревья ❤</p>',
+      buttons: [{ label: 'Продолжить', primary: true }],
+    });
+  }
   game.saveT += CFG.STEP;
   if (game.saveT > 20) { game.saveT = 0; persist(); }
 }
@@ -355,9 +375,29 @@ function renderWorld(dt, live, alpha) {
   }
   followCamera(tx, ty, live, game.world.map);
   scene.sync(live, alpha);
+  updateKingHud(game.world);
   ui.setHearts(h.hp, CFG.HERO.maxHp);
   ui.setInventory(h.weapons, h.gun, game.world.wood);
   ui.setPortrait(h.kind, currentExpr(dt, h.hp <= 1));
+}
+
+// Король убегает, а карта больше экрана: у края экрана показываем стрелку в его сторону, в подписи — его здоровье.
+function updateKingHud(w) {
+  const k = w.king;
+  if (!k || !k.alive) { ui.setKingIndicator(false); ui.setSub(''); return; }
+  ui.setSub('Король ' + Math.ceil(k.hp) + '/' + CFG.MOBS.king.hp);
+  const e = view.halfExtent();
+  const dx = k.x - game.cam.x, dy = k.y - 10 - game.cam.y;
+  if (Math.abs(dx) < e.hw - 10 && Math.abs(dy) < e.hh - 10) { ui.setKingIndicator(false); return; }
+  // Точка на краю экрана (в CSS-пикселях) по лучу от центра к королю.
+  const css = view.scale / view.dpr;
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const px = dx * css, py = dy * css;
+  const margin = 46, top = 120;   // сверху ниже HUD
+  const t = Math.min((cx - margin) / (Math.abs(px) || 1e-6), (cy - (px === 0 && py < 0 ? top : margin)) / (Math.abs(py) || 1e-6));
+  let x = cx + px * t, y = cy + py * t;
+  y = Math.max(top, Math.min(window.innerHeight - margin, y));
+  ui.setKingIndicator(true, x, y, Math.atan2(py, px));
 }
 
 function renderTrial(dt, live, alpha) {
@@ -457,6 +497,7 @@ function persist() {
   game.save.kills = game.world.kills;
   game.save.wood = game.world.wood;
   game.save.weaponIdx = h.weaponIdx;
+  game.save.kingDead = game.world.kingDead;
   writeSave(game.save);
 }
 

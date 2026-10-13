@@ -345,6 +345,21 @@ export class View {
     for (const [id, r] of Object.entries(wmeta.weapons)) {
       this.weapons[id] = { x: r.x, y: r.y, w: r.w, h: r.h, ax: r.pivot[0], ay: r.pivot[1], mx: r.muzzle[0], my: r.muzzle[1] };
     }
+    // Орда: один лист на все варианты зомби и короля (строки — вариант, вид, анимация).
+    const zmeta = await loadJSON('assets/zombie_atlas.json');
+    const zimg = await loadImage('assets/zombie_sheet.png');
+    this.zombieMeta = zmeta;
+    this.zombieTex = pixelTexture(zimg);
+    this.zombieTexSize = [zimg.width, zimg.height];
+    this.zombieRects = {};
+    const [zw, zh] = zmeta.frame;
+    for (const name of zmeta.variants) {
+      const rows = {};
+      for (const [key, d] of Object.entries(zmeta.rows[name])) {
+        rows[key] = Array.from({ length: d.frames }, (_, i) => ({ x: i * zw, y: d.row * zh, w: zw, h: zh, ax: zmeta.anchor[0], ay: zmeta.anchor[1] }));
+      }
+      this.zombieRects[name] = rows;
+    }
     // Кадры героев: у каждого свой атлас (размер кадра, точка опоры, высота оружия).
     this.heroMeta = {};
     this.heroAnims = {};
@@ -390,6 +405,9 @@ export class View {
     this.camera.position.x = cx;
     this.camera.position.y = -cy;
   }
+
+  // Половина видимой области в пикселях мира.
+  halfExtent() { return { hw: this.devW / 2 / this.scale, hh: this.devH / 2 / this.scale }; }
 
   // Мировые координаты точки экрана (CSS-пиксели).
   screenToWorld(sx, sy) {
@@ -506,6 +524,16 @@ export class MapScene {
   heroSprite(kind, armed = false) {
     const [w, h] = this.view.heroTexSize[kind];
     const mat = flashMaterial(armed ? this.view.heroTexArmed[kind] : this.view.heroTex[kind]);
+    this.owned.push(mat);
+    const s = new Sprite(mat, w, h, this.root);
+    s.mat = mat;
+    this.sprites.push(s);
+    return s;
+  }
+
+  zombieSprite() {
+    const [w, h] = this.view.zombieTexSize;
+    const mat = flashMaterial(this.view.zombieTex);
     this.owned.push(mat);
     const s = new Sprite(mat, w, h, this.root);
     s.mat = mat;
