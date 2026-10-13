@@ -26,6 +26,9 @@
           <div id="weapon-slots" class="weapon-slots"></div>
           <div id="weapon-name" class="weapon-name" aria-live="polite"></div>
         </div>
+        <div id="super-bar" class="super-bar hidden" aria-label="Заряд суперудара">
+          <span class="pip"></span><span class="pip"></span><span class="pip"></span><b class="super-key">F</b>
+        </div>
         <div id="hud-sub" class="hud-sub"></div>
         <div id="hud-inv" class="hud-inv hidden">
           <span id="hud-wood" class="hud-wood hidden"><canvas id="wood-icon" width="15" height="15"></canvas><b id="wood-count">0</b></span>
@@ -65,6 +68,9 @@
       </button>
       <button class="pad-btn pixel-btn sprint" data-action="sprint" data-mode="world" aria-label="Бег: держи нажатой">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L6 13h5l-1 8 7-10h-5z"/></svg>
+      </button>
+      <button class="pad-btn pixel-btn super" data-action="super" data-mode="world" aria-label="Суперудар: заряжается убийствами">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-.5z"/></svg>
       </button>
       <button class="pad-btn pixel-btn swap" data-action="swap" data-mode="trial" aria-label="Сменить героя">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>

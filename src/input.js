@@ -3,7 +3,7 @@ const KEYS = {
   up: ['KeyW', 'ArrowUp'], down: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
   jump: ['Space'], shoot: ['KeyJ', 'KeyZ'], dash: ['KeyK', 'KeyX'], sprint: ['ShiftLeft', 'ShiftRight'],
   swap: ['KeyQ', 'Tab'], pause: ['Escape', 'KeyP'],
-  switch: ['KeyE'], slot1: ['Digit1', 'Numpad1'], slot2: ['Digit2', 'Numpad2'],
+  super: ['KeyF', 'KeyR'], switch: ['KeyE'], slot1: ['Digit1', 'Numpad1'], slot2: ['Digit2', 'Numpad2'],
 };
 const CODE_TO_ACTION = {};
 for (const [a, codes] of Object.entries(KEYS)) for (const c of codes) CODE_TO_ACTION[c] = a;
@@ -173,6 +173,7 @@ export class Input {
       switchWeapon: this.pressed.has('switch'),
       slot: this.pressed.has('slot1') ? 0 : this.pressed.has('slot2') ? 1 : -1,
       pause: this.pressed.has('pause'),
+      super: this.pressed.has('super'),
     };
     this.pressed.clear();
     return snap;

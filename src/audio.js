@@ -167,6 +167,34 @@ class Audio {
     o.start(now); o.stop(now + 0.8);
   }
 
+  // Суперудар: глухой взрыв (шум с падающим фильтром) и «проваливающийся» бас.
+  boom(vol = 0.9) {
+    const c = this.ctx;
+    if (!c || c.state !== 'running') return;
+    const now = c.currentTime;
+    const n = c.createBufferSource();
+    n.buffer = this.noise;
+    n.loop = true;
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(2400, now);
+    lp.frequency.exponentialRampToValueAtTime(90, now + 0.7);
+    const ng = c.createGain();
+    ng.gain.setValueAtTime(vol, now);
+    ng.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    n.connect(lp).connect(ng).connect(this.master);
+    n.start(now); n.stop(now + 0.85);
+    const o = c.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(130, now);
+    o.frequency.exponentialRampToValueAtTime(28, now + 0.6);
+    const og = c.createGain();
+    og.gain.setValueAtTime(vol, now);
+    og.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+    o.connect(og).connect(this.master);
+    o.start(now); o.stop(now + 0.75);
+  }
+
   // Время от времени рычит ближайший зомби: чем ближе, тем громче. Дальше 150 px не слышно.
   tickZombies(world, dt) {
     this.groanT -= dt;
@@ -247,6 +275,11 @@ class Audio {
       case 'treeGrow': this.play('heal', { vol: 0.25 * vol, rate: 1.5 }); break;
       case 'hit': this.play('hit', { vol: 0.8 * vol }); break;
       // Орда: звуки тише и ниже, иначе очередь по толпе превращается в кашу.
+      case 'super':
+        this.boom(0.9);
+        setTimeout(() => this.play('heal', { vol: 0.6, rate: 1.4 }), 120);
+        break;
+      case 'superReady': this.play('pickup', { vol: 0.6, rate: 1.5 }); break;
       case 'zhit': this.play('hit', { vol: 0.35 * vol, rate: 0.8, minGap: 0.05 }); break;
       case 'zkill': this.play('kill', { vol: 0.5 * vol, rate: 0.7, minGap: 0.07 }); break;
       case 'zcollapse': this.play('kill', { vol: 0.22 * vol, rate: 0.55, minGap: 0.09 }); break;

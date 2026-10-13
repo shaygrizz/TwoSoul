@@ -4,7 +4,7 @@ import { moveBox } from './physics.js';
 
 const H = CFG.HERO;
 
-export const EMPTY_INPUT = Object.freeze({ mx: 0, my: 0, jump: false, shoot: false, dash: false, sprint: false, aim: null, aimDir: null, switchWeapon: false, slot: -1 });
+export const EMPTY_INPUT = Object.freeze({ mx: 0, my: 0, jump: false, shoot: false, dash: false, sprint: false, super: false, aim: null, aimDir: null, switchWeapon: false, slot: -1 });
 
 export function createHero(kind, x, y) {
   return {
@@ -19,7 +19,7 @@ export function createHero(kind, x, y) {
     hp: H.maxHp, inv: 0, hurtT: 0,
     dashT: 0, dashCd: 0, dashX: 0, dashY: 0,
     sprint: false,        // зажат бег (Shift) и герой действительно движется
-    shootCd: 0, castT: 0, landT: 0,
+    shootCd: 0, castT: 0, landT: 0, superT: 0,
     dead: false, deadT: 0, cheer: false,
     anim: 'idle', animT: 0,
     safeX: x, safeY: y,
@@ -41,6 +41,7 @@ export function updateHero(h, inp, dt, ctx) {
   h.shootCd = Math.max(0, h.shootCd - dt);
   h.castT = Math.max(0, h.castT - dt);
   h.landT = Math.max(0, h.landT - dt);
+  h.superT = Math.max(0, h.superT - dt);
 
   if (h.dead) {
     h.deadT -= dt;
@@ -188,6 +189,7 @@ function updateAim(h, inp, ctx) {
 
 function pickAnim(h) {
   if (h.hurtT > 0) return 'hurt';
+  if (h.superT > 0) return 'cheer';   // руки вверх в момент суперудара
   if (h.cheer) return 'cheer';
   if (h.dashT > 0) return 'dash';
   if (h.z > 0) return h.vz > 0 ? 'jump' : 'fall';

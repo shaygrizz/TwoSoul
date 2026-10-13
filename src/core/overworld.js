@@ -45,6 +45,8 @@ export function createOverworld(heroKind, saved, opts = {}) {
     time: 0,
   };
   w.blocked = (tx, ty) => map.blockedWalk(tx, ty);
+  w.super = { charge: 0 };   // сколько убийств накоплено для суперудара
+  w.wave = null;             // волна суперудара, пока расходится
   w.kingDead = Boolean(saved && saved.kingDead);
   w.king = null;
   w.view = { hw: 260, hh: 170 };   // половина видимой области в пикселях мира: main обновляет каждый кадр
@@ -166,7 +168,7 @@ function updateCollapse(w, dt) {
 }
 
 // Событие попадания и награда. У зомби свои события: их много, и каждый не должен давать заморозку кадра.
-function mobHit(w, m, killed, dx, dy) {
+function mobHit(w, m, killed, dx, dy, bySuper = false) {
   const idx = w.mobs.indexOf(m);
   const horde = isHorde(m);
   w.events.push({ type: horde ? (killed ? 'zkill' : 'zhit') : (killed ? 'kill' : 'hit'), x: m.x, y: m.y, z: m.z + 6, mob: m.type, dx, dy, idx });
@@ -176,9 +178,41 @@ function mobHit(w, m, killed, dx, dy) {
   }
   if (killed) {
     w.kills++;
+    if (!bySuper && m.type !== 'king' && w.super.charge < CFG.SUPER.kills && ++w.super.charge >= CFG.SUPER.kills) {
+      w.events.push({ type: 'superReady', x: w.hero.x, y: w.hero.y, z: 20 });
+    }
     const chance = CFG.MOBS[m.type].drop ?? CFG.HEART_DROP_CHANCE;
     if (m.type !== 'king' && w.rnd() < chance) dropHeart(w, m.x, m.y);
   }
+}
+
+// Суперудар: от героя расходится волна. Каждого, до кого она дошла, бьёт один раз и отбрасывает наружу.
+function fireSuper(w) {
+  const hero = w.hero;
+  w.super.charge = 0;
+  hero.superT = CFG.SUPER.time;
+  hero.inv = Math.max(hero.inv, CFG.SUPER.time + 0.15);   // на момент удара герой неуязвим
+  w.wave = { x: hero.x, y: hero.y, r: 0, hit: new Set() };
+  w.events.push({ type: 'super', x: hero.x, y: hero.y, z: 10 });
+}
+
+function updateWave(w, dt) {
+  const wave = w.wave;
+  if (!wave) return;
+  wave.r += CFG.SUPER.speed * dt;
+  for (const m of w.mobs) {
+    if (!m.alive || wave.hit.has(m)) continue;
+    const def = CFG.MOBS[m.type];
+    const dx = m.x - wave.x, dy = m.y - wave.y;
+    const d = Math.hypot(dx, dy);
+    if (d > wave.r + def.radius || d > CFG.SUPER.radius + def.radius) continue;
+    wave.hit.add(m);
+    const nx = d > 0.01 ? dx / d : 1, ny = d > 0.01 ? dy / d : 0;
+    const killed = damageMob(m, m.type === 'king' ? CFG.SUPER.kingDamage : CFG.SUPER.damage, nx, ny);
+    if (!killed && m.type !== 'bat') { m.kx = nx * CFG.SUPER.knock; m.ky = ny * CFG.SUPER.knock; }
+    mobHit(w, m, killed, nx, ny, true);
+  }
+  if (wave.r >= CFG.SUPER.radius + 12) w.wave = null;
 }
 
 // Убрать зомби рядом с точкой возрождения героя, чтобы орда не караулила его на старте.
@@ -216,6 +250,9 @@ export function updateOverworld(w, inp, dt) {
     },
     onMelee: (h, ax, ay) => melee(w, h, ax, ay, emit),
   });
+
+  if (inp.super && !hero.dead && w.super.charge >= CFG.SUPER.kills) fireSuper(w);
+  updateWave(w, dt);
 
   updateTrees(w, dt, hero, (x, y) => dropPickup(w, 'wood', x, y));
 

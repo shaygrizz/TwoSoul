@@ -41,6 +41,9 @@ export const CFG = {
     // Король убегает от героя (его скорость меньше бега, поэтому его можно догнать). Сам не кусается.
     king:     { hp: 30, radius: 8, speed: 60, aggro: 9999, height: 46, knock: 18, respawn: 0, jumpOver: 999, harmless: true, fleeDist: 130, scale: 1.5 },
   },
+  // Суперудар: заряжается убийствами и расходится от героя волной. kills — сколько убийств нужно,
+  // radius — как далеко бьёт, speed — как быстро расходится волна (px/с), damage — урон мобам, kingDamage — урон королю.
+  SUPER: { kills: 3, radius: 200, speed: 520, damage: 4, kingDamage: 6, knock: 150, time: 0.35 },
   // Орда: cap — сколько зомби живо одновременно, initial — сколько сразу на карте,
   // spawnEvery — как часто появляется новый, minDist — минимальное расстояние до героя при появлении.
   HORDE: { cap: 70, initial: 45, spawnEvery: 0.3, minDist: 150, viewMargin: 24, spawnClear: 130 },

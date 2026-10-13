@@ -110,6 +110,7 @@ export class UI {
   showHUD(mode) {
     $('hud').classList.remove('hidden');
     $('trial-hud').classList.toggle('hidden', mode !== 'trial');
+    $('super-bar').classList.toggle('hidden', mode !== 'world');
     const touch = $('touch');
     touch.classList.toggle('hidden', !document.body.classList.contains('touch'));
     touch.classList.toggle('trial', mode === 'trial');
@@ -133,6 +134,17 @@ export class UI {
       box.appendChild(img);
     }
     box.setAttribute('aria-label', `Здоровье: ${hp} из ${max}`);
+  }
+
+  // Шкала суперудара: три деления по числу нужных убийств. Когда заряд полный, шкала и кнопка пульсируют.
+  setSuper(charge, need) {
+    const key = charge + '/' + need;
+    if (key === this.superKey) return;
+    this.superKey = key;
+    const ready = charge >= need;
+    $('super-bar').classList.toggle('ready', ready);
+    document.querySelectorAll('.pad .super').forEach((b) => b.classList.toggle('ready', ready));
+    document.querySelectorAll('#super-bar .pip').forEach((p, i) => p.classList.toggle('on', i < charge));
   }
 
   setHeartsVisible(v) { $('hearts').classList.toggle('hidden', !v); }

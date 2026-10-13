@@ -119,3 +119,87 @@ test('если король уже убит в сохранении — орды
   assert.equal(w.king, null);
   assert.ok(w.kingDead);
 });
+
+// ---------- суперудар ----------
+const SUPER = { ...EMPTY_INPUT, super: true };
+
+// Убивает зомби пулей: так заряжается суперудар.
+function shootZombie(w, z) {
+  z.hp = 1;
+  spawnProjectile(w.projectiles, 'bulletAk', 'hero', z.x - 8, z.y, CFG.GUN_HEIGHT, 340, 0, 0.5, 3).damage = 1;
+}
+
+function chargeUp(w) {
+  for (let i = 0; i < CFG.SUPER.kills; i++) {
+    const z = alive(w).find((m) => dist(m, w.hero) > 150);
+    z.x = z.px = w.hero.x + 60; z.y = z.py = w.hero.y;
+    shootZombie(w, z);
+    steps(w, 6);
+  }
+}
+
+test('суперудар заряжается от убийств и без заряда не срабатывает', () => {
+  const w = createOverworld('her', null);
+  assert.equal(steps(w, 3, SUPER).includes('super'), false, 'без заряда ничего не происходит');
+  assert.equal(w.super.charge, 0);
+  const z = alive(w)[0];
+  z.x = z.px = w.hero.x + 60; z.y = z.py = w.hero.y;
+  shootZombie(w, z);
+  steps(w, 6);
+  assert.equal(w.super.charge, 1);
+  chargeUp(w);
+  assert.equal(w.super.charge, CFG.SUPER.kills, 'заряд не больше нужного');
+});
+
+test('суперудар убивает зомби в радиусе, дальних не трогает, и не заряжает сам себя', () => {
+  const w = createOverworld('her', null);
+  chargeUp(w);
+  const zs = alive(w);
+  // Свободные клетки на кольце заданного радиуса вокруг героя (в стены зомби не ставим).
+  const ring = (r, n) => {
+    const out = [];
+    for (let i = 0; i < 72 && out.length < n; i++) {
+      const ang = (i / 72) * Math.PI * 2;
+      const x = w.hero.x + Math.cos(ang) * r, y = w.hero.y + Math.sin(ang) * r;
+      if (!w.map.blockedWalk(toTile(x - 6), toTile(y - 4)) && !w.map.blockedWalk(toTile(x + 6), toTile(y + 4))
+        && !w.map.blockedWalk(toTile(x), toTile(y))) out.push([x, y]);
+    }
+    return out;
+  };
+  const near = ring(80, 8).map(([x, y], i) => { const z = zs[i]; z.x = z.px = x; z.y = z.py = y; return z; });
+  const far = ring(CFG.SUPER.radius + 90, 4).map(([x, y], i) => { const z = zs[8 + i]; z.x = z.px = x; z.y = z.py = y; return z; });
+  assert.equal(near.length, 8);
+  assert.ok(far.length >= 1);
+  w.hero.hp = CFG.HERO.maxHp;
+  const seen = steps(w, 1, SUPER);
+  assert.ok(seen.includes('super'));
+  steps(w, 60);
+  assert.ok(near.every((z) => !z.alive), 'все рядом убиты');
+  assert.ok(far.some((z) => z.alive), 'дальние живы');
+  assert.equal(w.super.charge, 0, 'убийства волной заряд не пополняют');
+  assert.equal(w.wave, null, 'волна закончилась');
+});
+
+test('суперудар сильно бьёт короля и пугает его', () => {
+  const w = createOverworld('her', null);
+  chargeUp(w);
+  const k = w.king;
+  placeHero(w.hero, k.x - 50, k.y);
+  const hp = k.hp;
+  steps(w, 1, SUPER);
+  steps(w, 40);
+  assert.equal(k.hp, hp - CFG.SUPER.kingDamage);
+  assert.ok(k.alive);
+});
+
+test('после трёх убийств приходит событие готовности суперудара', () => {
+  const w = createOverworld('her', null);
+  const seen = [];
+  for (let i = 0; i < CFG.SUPER.kills; i++) {
+    const z = alive(w).find((m) => dist(m, w.hero) > 150);
+    z.x = z.px = w.hero.x + 60; z.y = z.py = w.hero.y;
+    shootZombie(w, z);
+    seen.push(...steps(w, 6));
+  }
+  assert.equal(seen.filter((t) => t === 'superReady').length, 1);
+});

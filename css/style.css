@@ -334,3 +334,19 @@ body.aiming #game { cursor: none; }
   transform: rotate(var(--a, 0rad)) translateX(28px); filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.45)); }
 @keyframes king-pulse { 50% { transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .king-ind svg { animation: none; } }
+
+/* Шкала и кнопка суперудара */
+.super-bar { display: flex; align-items: center; gap: 4px; margin: 3px 0 1px 4px; }
+.super-bar.hidden { display: none; }
+.super-bar .pip { width: 16px; height: 16px; background: rgba(20, 12, 40, 0.7); border: 2px solid #8b6bd1; box-shadow: 2px 2px 0 var(--shadow); }
+.super-bar .pip.on { background: #ffd451; border-color: #fff3b0; }
+.super-bar.ready .pip { animation: super-pulse 0.5s steps(2) infinite; }
+.super-key { font-size: 12px; margin-left: 4px; padding: 1px 5px; color: #3a2c5e; background: #f4e3c1; box-shadow: 0 2px 0 0 var(--shadow); opacity: 0.55; }
+.super-bar.ready .super-key { opacity: 1; }
+body.touch .super-key { display: none; }
+.pad .super { right: 176px; bottom: 88px; width: 58px; height: 58px; --btn-bg: #4a3a86; --btn-lit: #6b57b8; opacity: 0.55; }
+.pad .super svg { width: 60%; height: 60%; fill: #9d8bd6; stroke: none; }
+.pad .super.ready { opacity: 1; --btn-bg: #b8862a; --btn-lit: #ffd451; animation: super-pulse 0.5s steps(2) infinite; }
+.pad .super.ready svg { fill: #fff3b0; }
+@keyframes super-pulse { 50% { filter: brightness(1.45); } }
+@media (prefers-reduced-motion: reduce) { .super-bar.ready .pip, .pad .super.ready { animation: none; } }

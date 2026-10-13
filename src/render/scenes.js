@@ -66,6 +66,9 @@ export class OverworldScene extends MapScene {
     // Портал светится двумя цветами.
     this.gateGlowF = this.glow(0xff8a3a, 46, 0.35);
     this.gateGlowW = this.glow(0x4aa3ff, 46, 0.35);
+    // Вспышка суперудара: светящийся диск, растёт вместе с волной.
+    this.waveGlow = this.glow(0xffd451, 2, 0.45);
+    this.waveGlow.show(false);
     this.cross = this.atlasSprite();
     this.cross.frame(this.rect('crosshair'));
     this.cross.show(false);
@@ -85,6 +88,17 @@ export class OverworldScene extends MapScene {
       for (const s of [hv.spr, hv.shadow, hv.gun, hv.muzzle]) s?.show(false);
     } else this.drawHero(hv, w.hero, alpha, dt);
 
+    // Волна суперудара: светящееся кольцо по земле, пока она расходится.
+    if (w.wave) {
+      for (let k = 0; k < 36; k++) {
+        const a = Math.random() * Math.PI * 2;
+        this.particles.spawn(w.wave.x + Math.cos(a) * w.wave.r, w.wave.y + Math.sin(a) * w.wave.r, 3 + Math.random() * 6,
+          Math.cos(a) * 30, Math.sin(a) * 30, 0, 0.25, pick(['#ffffff', '#ffd451', '#ffb347']), 3, 0);
+      }
+      this.waveGlow.show(true);
+      this.waveGlow.place(w.wave.x, w.wave.y, 2, w.wave.r);
+      this.waveGlow.alpha(Math.max(0, 1 - w.wave.r / CFG.SUPER.radius));
+    } else this.waveGlow.show(false);
     w.mobs.forEach((m, i) => this.drawMob(m, this.mobViews[i], alpha, dt));
     w.projectiles.forEach((p, i) => this.drawProjectile(p, this.projViews[i], alpha));
 
@@ -321,6 +335,12 @@ export class OverworldScene extends MapScene {
         break;
       case 'zcollapse':
         burst(ps, e.x, e.y, e.z, 7, MOB_COLORS.zombie, 40, 0.6, 2, 30);
+        break;
+      case 'super':
+        burst(ps, e.x, e.y, 12, 40, ['#ffffff', '#ffd451', '#ffb347', '#a26cff'], 90, 0.5, 2, 0);
+        break;
+      case 'superReady':
+        burst(ps, e.x, e.y, e.z, 14, ['#ffd451', '#fff3b0', '#ffffff'], 40, 0.7, 1, 0);
         break;
       case 'kingDown':
         burst(ps, e.x, e.y, 24, 60, ['#ffd451', '#fff3b0', '#a26cff', '#7fae4a', '#ffffff'], 110, 1.3, 2, 60);

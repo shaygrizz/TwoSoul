@@ -23,6 +23,7 @@ const game = {
   shake: { t: 0, kx: 0, ky: 0 },
   hitstop: 0,
   expr: { name: 'smile', t: 0 }, winkT: 4,
+  superToasts: 0,       // сколько раз уже подсказали про суперудар
   victoryT: 0,         // обратный отсчёт до окна победы после смерти короля
 };
 
@@ -298,6 +299,10 @@ function stepWorld(inp) {
       case 'heroDown': setExpr('hurt', 1.5); addShake(CFG.FEEL.shake.hurt); ui.toast('Ой! Возвращаемся домой…'); break;
       case 'kill': setExpr('happy', 0.8); addShake(CFG.FEEL.shake.kill); game.hitstop = CFG.FEEL.hitStop; break;
       case 'heal': setExpr('happy', 0.8); persist(); break;
+      case 'super': setExpr('happy', 0.9); addShake(5); break;
+      case 'superReady':
+        if (game.superToasts++ < 3) ui.toast(document.body.classList.contains('touch') ? 'Суперудар готов! Жми кнопку со звездой' : 'Суперудар готов! Нажми F', 2000);
+        break;
       case 'zkill': addShake(0.5); break;   // зомби много: без заморозки кадра и смены лица
       case 'kingDown':
         setExpr('happy', 3); addShake(6);
@@ -376,6 +381,7 @@ function renderWorld(dt, live, alpha) {
   followCamera(tx, ty, live, game.world.map);
   scene.sync(live, alpha);
   updateKingHud(game.world);
+  ui.setSuper(game.world.super.charge, CFG.SUPER.kills);
   ui.setHearts(h.hp, CFG.HERO.maxHp);
   ui.setInventory(h.weapons, h.gun, game.world.wood);
   ui.setPortrait(h.kind, currentExpr(dt, h.hp <= 1));
