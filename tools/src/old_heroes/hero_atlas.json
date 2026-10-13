@@ -1,0 +1,211 @@
+{
+ "frame": [
+  32,
+  42
+ ],
+ "anchor": [
+  16,
+  40
+ ],
+ "layout": "one row per animation; columns are frames; views: front, back, side (3/4 turn facing right, flip for left)",
+ "views": {
+  "front": {
+   "idle": {
+    "row": 0,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "walk": {
+    "row": 1,
+    "frames": 12,
+    "fps": 20,
+    "loop": true
+   },
+   "run": {
+    "row": 2,
+    "frames": 12,
+    "fps": 30,
+    "loop": true
+   },
+   "jump": {
+    "row": 3,
+    "frames": 3,
+    "fps": 15,
+    "loop": false
+   },
+   "fall": {
+    "row": 4,
+    "frames": 4,
+    "fps": 16,
+    "loop": true
+   },
+   "land": {
+    "row": 5,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "dash": {
+    "row": 6,
+    "frames": 3,
+    "fps": 21,
+    "loop": false
+   },
+   "hurt": {
+    "row": 7,
+    "frames": 2,
+    "fps": 14,
+    "loop": true
+   },
+   "cheer": {
+    "row": 8,
+    "frames": 4,
+    "fps": 10,
+    "loop": true
+   },
+   "cast": {
+    "row": 9,
+    "frames": 6,
+    "fps": 18,
+    "loop": false
+   }
+  },
+  "back": {
+   "idle": {
+    "row": 10,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "walk": {
+    "row": 11,
+    "frames": 12,
+    "fps": 20,
+    "loop": true
+   },
+   "run": {
+    "row": 12,
+    "frames": 12,
+    "fps": 30,
+    "loop": true
+   },
+   "jump": {
+    "row": 13,
+    "frames": 3,
+    "fps": 15,
+    "loop": false
+   },
+   "fall": {
+    "row": 14,
+    "frames": 4,
+    "fps": 16,
+    "loop": true
+   },
+   "land": {
+    "row": 15,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "dash": {
+    "row": 16,
+    "frames": 3,
+    "fps": 21,
+    "loop": false
+   },
+   "hurt": {
+    "row": 17,
+    "frames": 2,
+    "fps": 14,
+    "loop": true
+   },
+   "cheer": {
+    "row": 18,
+    "frames": 4,
+    "fps": 10,
+    "loop": true
+   },
+   "cast": {
+    "row": 19,
+    "frames": 6,
+    "fps": 18,
+    "loop": false
+   }
+  },
+  "side": {
+   "idle": {
+    "row": 20,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "walk": {
+    "row": 21,
+    "frames": 12,
+    "fps": 20,
+    "loop": true
+   },
+   "run": {
+    "row": 22,
+    "frames": 12,
+    "fps": 30,
+    "loop": true
+   },
+   "jump": {
+    "row": 23,
+    "frames": 3,
+    "fps": 15,
+    "loop": false
+   },
+   "fall": {
+    "row": 24,
+    "frames": 4,
+    "fps": 16,
+    "loop": true
+   },
+   "land": {
+    "row": 25,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "dash": {
+    "row": 26,
+    "frames": 3,
+    "fps": 21,
+    "loop": false
+   },
+   "hurt": {
+    "row": 27,
+    "frames": 2,
+    "fps": 14,
+    "loop": true
+   },
+   "cheer": {
+    "row": 28,
+    "frames": 4,
+    "fps": 10,
+    "loop": true
+   },
+   "cast": {
+    "row": 29,
+    "frames": 6,
+    "fps": 18,
+    "loop": false
+   }
+  }
+ },
+ "portrait_size": [
+  44,
+  44
+ ],
+ "portraits": [
+  "neutral",
+  "smile",
+  "happy",
+  "wink",
+  "hurt",
+  "surprised"
+ ]
+}

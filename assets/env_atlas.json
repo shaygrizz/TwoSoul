@@ -1,0 +1,87 @@
+{
+ "image": "assets/env.png",
+ "license": "CC0 (Ninja Adventure by Pixel-boy)",
+ "sprites": {
+  "naTree": {
+   "x": 2,
+   "y": 2,
+   "w": 32,
+   "h": 29,
+   "ax": 16,
+   "ay": 28,
+   "scale": 2
+  },
+  "naPine": {
+   "x": 36,
+   "y": 2,
+   "w": 32,
+   "h": 30,
+   "ax": 16,
+   "ay": 29,
+   "scale": 2
+  },
+  "naPinkTree": {
+   "x": 70,
+   "y": 2,
+   "w": 32,
+   "h": 29,
+   "ax": 16,
+   "ay": 28,
+   "scale": 2
+  },
+  "naBigTree": {
+   "x": 104,
+   "y": 2,
+   "w": 32,
+   "h": 27,
+   "ax": 16,
+   "ay": 26,
+   "scale": 2
+  },
+  "naHouse1": {
+   "x": 138,
+   "y": 2,
+   "w": 64,
+   "h": 45,
+   "ax": 32,
+   "ay": 44,
+   "scale": 2
+  },
+  "naHouse2": {
+   "x": 2,
+   "y": 49,
+   "w": 62,
+   "h": 43,
+   "ax": 31,
+   "ay": 42,
+   "scale": 2
+  },
+  "naHouse3": {
+   "x": 66,
+   "y": 49,
+   "w": 64,
+   "h": 45,
+   "ax": 32,
+   "ay": 44,
+   "scale": 2
+  },
+  "naStump": {
+   "x": 132,
+   "y": 49,
+   "w": 30,
+   "h": 23,
+   "ax": 15,
+   "ay": 22,
+   "scale": 1
+  },
+  "naLogs": {
+   "x": 164,
+   "y": 49,
+   "w": 15,
+   "h": 14,
+   "ax": 7,
+   "ay": 13,
+   "scale": 1
+  }
+ }
+}

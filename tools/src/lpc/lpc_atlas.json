@@ -1,0 +1,128 @@
+{
+ "frame": [
+  64,
+  64
+ ],
+ "anchor": [
+  32,
+  60
+ ],
+ "layout": "Universal LPC: строки по 4 направления (up, left, down, right), столбцы — кадры",
+ "directions": [
+  "up",
+  "left",
+  "down",
+  "right"
+ ],
+ "sheets": {
+  "her": "assets/lpc/her_lpc.png",
+  "him": "assets/lpc/him_lpc.png"
+ },
+ "anims": {
+  "spellcast": {
+   "row": 0,
+   "dirs": 4,
+   "frames": 7,
+   "fps": 10,
+   "loop": false
+  },
+  "thrust": {
+   "row": 4,
+   "dirs": 4,
+   "frames": 8,
+   "fps": 12,
+   "loop": false
+  },
+  "walk": {
+   "row": 8,
+   "dirs": 4,
+   "frames": 9,
+   "fps": 10,
+   "loop": true
+  },
+  "slash": {
+   "row": 12,
+   "dirs": 4,
+   "frames": 6,
+   "fps": 14,
+   "loop": false
+  },
+  "shoot": {
+   "row": 16,
+   "dirs": 4,
+   "frames": 13,
+   "fps": 16,
+   "loop": false
+  },
+  "hurt": {
+   "row": 20,
+   "dirs": 1,
+   "frames": 6,
+   "fps": 10,
+   "loop": false
+  },
+  "climb": {
+   "row": 21,
+   "dirs": 1,
+   "frames": 6,
+   "fps": 8,
+   "loop": true
+  },
+  "idle": {
+   "row": 22,
+   "dirs": 4,
+   "frames": 2,
+   "fps": 2,
+   "loop": true
+  },
+  "jump": {
+   "row": 26,
+   "dirs": 4,
+   "frames": 5,
+   "fps": 10,
+   "loop": false
+  },
+  "sit": {
+   "row": 30,
+   "dirs": 4,
+   "frames": 3,
+   "fps": 4,
+   "loop": false
+  },
+  "emote": {
+   "row": 34,
+   "dirs": 4,
+   "frames": 3,
+   "fps": 4,
+   "loop": false
+  },
+  "run": {
+   "row": 38,
+   "dirs": 4,
+   "frames": 8,
+   "fps": 14,
+   "loop": true
+  },
+  "combat_idle": {
+   "row": 42,
+   "dirs": 4,
+   "frames": 2,
+   "fps": 3,
+   "loop": true
+  },
+  "backslash": {
+   "row": 46,
+   "dirs": 4,
+   "frames": 13,
+   "fps": 16,
+   "loop": false
+  },
+  "halfslash": {
+   "row": 50,
+   "dirs": 4,
+   "frames": 6,
+   "fps": 14,
+   "loop": false
+  }
+ }
+}

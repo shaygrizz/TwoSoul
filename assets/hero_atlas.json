@@ -1,0 +1,584 @@
+{
+ "frame": [
+  64,
+  64
+ ],
+ "anchor": [
+  32,
+  60
+ ],
+ "gunHeight": 15,
+ "layout": "rows by animation (y in pixels); columns are frames; views: front, back, side (facing right, flip for left); name_ak / name_axe are the same animations with the weapon in hands",
+ "views": {
+  "front": {
+   "idle": {
+    "row": 0,
+    "y": 0,
+    "frames": 2,
+    "fps": 2,
+    "loop": true
+   },
+   "walk": {
+    "row": 1,
+    "y": 64,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run": {
+    "row": 2,
+    "y": 128,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "jump": {
+    "row": 3,
+    "y": 192,
+    "frames": 2,
+    "fps": 10,
+    "loop": false
+   },
+   "fall": {
+    "row": 4,
+    "y": 256,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land": {
+    "row": 5,
+    "y": 320,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "dash": {
+    "row": 6,
+    "y": 384,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "hurt": {
+    "row": 7,
+    "y": 448,
+    "frames": 6,
+    "fps": 14,
+    "loop": false
+   },
+   "cheer": {
+    "row": 8,
+    "y": 512,
+    "frames": 2,
+    "fps": 4,
+    "loop": true
+   },
+   "cast": {
+    "row": 9,
+    "y": 576,
+    "frames": 6,
+    "fps": 17,
+    "loop": false
+   },
+   "idle_ak": {
+    "row": 30,
+    "y": 1920,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "jump_ak": {
+    "row": 31,
+    "y": 1984,
+    "frames": 1,
+    "fps": 8,
+    "loop": false
+   },
+   "fall_ak": {
+    "row": 32,
+    "y": 2048,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land_ak": {
+    "row": 33,
+    "y": 2112,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "walk_ak": {
+    "row": 34,
+    "y": 2176,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run_ak": {
+    "row": 35,
+    "y": 2240,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "dash_ak": {
+    "row": 36,
+    "y": 2304,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "idle_axe": {
+    "row": 37,
+    "y": 2368,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "jump_axe": {
+    "row": 38,
+    "y": 2432,
+    "frames": 1,
+    "fps": 8,
+    "loop": false
+   },
+   "fall_axe": {
+    "row": 39,
+    "y": 2496,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land_axe": {
+    "row": 40,
+    "y": 2560,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "walk_axe": {
+    "row": 41,
+    "y": 2624,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run_axe": {
+    "row": 42,
+    "y": 2688,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "dash_axe": {
+    "row": 43,
+    "y": 2752,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "cast_axe": {
+    "row": 44,
+    "y": 2816,
+    "frames": 6,
+    "fps": 17,
+    "loop": false,
+    "fw": 128,
+    "fh": 128,
+    "ax": 64,
+    "ay": 92
+   }
+  },
+  "back": {
+   "idle": {
+    "row": 10,
+    "y": 640,
+    "frames": 2,
+    "fps": 2,
+    "loop": true
+   },
+   "walk": {
+    "row": 11,
+    "y": 704,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run": {
+    "row": 12,
+    "y": 768,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "jump": {
+    "row": 13,
+    "y": 832,
+    "frames": 2,
+    "fps": 10,
+    "loop": false
+   },
+   "fall": {
+    "row": 14,
+    "y": 896,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land": {
+    "row": 15,
+    "y": 960,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "dash": {
+    "row": 16,
+    "y": 1024,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "hurt": {
+    "row": 17,
+    "y": 1088,
+    "frames": 6,
+    "fps": 14,
+    "loop": false
+   },
+   "cheer": {
+    "row": 18,
+    "y": 1152,
+    "frames": 2,
+    "fps": 4,
+    "loop": true
+   },
+   "cast": {
+    "row": 19,
+    "y": 1216,
+    "frames": 6,
+    "fps": 17,
+    "loop": false
+   },
+   "idle_ak": {
+    "row": 46,
+    "y": 2944,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "jump_ak": {
+    "row": 47,
+    "y": 3008,
+    "frames": 1,
+    "fps": 8,
+    "loop": false
+   },
+   "fall_ak": {
+    "row": 48,
+    "y": 3072,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land_ak": {
+    "row": 49,
+    "y": 3136,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "walk_ak": {
+    "row": 50,
+    "y": 3200,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run_ak": {
+    "row": 51,
+    "y": 3264,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "dash_ak": {
+    "row": 52,
+    "y": 3328,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "idle_axe": {
+    "row": 53,
+    "y": 3392,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "jump_axe": {
+    "row": 54,
+    "y": 3456,
+    "frames": 1,
+    "fps": 8,
+    "loop": false
+   },
+   "fall_axe": {
+    "row": 55,
+    "y": 3520,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land_axe": {
+    "row": 56,
+    "y": 3584,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "walk_axe": {
+    "row": 57,
+    "y": 3648,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run_axe": {
+    "row": 58,
+    "y": 3712,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "dash_axe": {
+    "row": 59,
+    "y": 3776,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "cast_axe": {
+    "row": 60,
+    "y": 3840,
+    "frames": 6,
+    "fps": 17,
+    "loop": false,
+    "fw": 128,
+    "fh": 128,
+    "ax": 64,
+    "ay": 92
+   }
+  },
+  "side": {
+   "idle": {
+    "row": 20,
+    "y": 1280,
+    "frames": 2,
+    "fps": 2,
+    "loop": true
+   },
+   "walk": {
+    "row": 21,
+    "y": 1344,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run": {
+    "row": 22,
+    "y": 1408,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "jump": {
+    "row": 23,
+    "y": 1472,
+    "frames": 2,
+    "fps": 10,
+    "loop": false
+   },
+   "fall": {
+    "row": 24,
+    "y": 1536,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land": {
+    "row": 25,
+    "y": 1600,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "dash": {
+    "row": 26,
+    "y": 1664,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "hurt": {
+    "row": 27,
+    "y": 1728,
+    "frames": 6,
+    "fps": 14,
+    "loop": false
+   },
+   "cheer": {
+    "row": 28,
+    "y": 1792,
+    "frames": 2,
+    "fps": 4,
+    "loop": true
+   },
+   "cast": {
+    "row": 29,
+    "y": 1856,
+    "frames": 6,
+    "fps": 17,
+    "loop": false
+   },
+   "idle_ak": {
+    "row": 62,
+    "y": 3968,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "jump_ak": {
+    "row": 63,
+    "y": 4032,
+    "frames": 1,
+    "fps": 8,
+    "loop": false
+   },
+   "fall_ak": {
+    "row": 64,
+    "y": 4096,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land_ak": {
+    "row": 65,
+    "y": 4160,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "walk_ak": {
+    "row": 66,
+    "y": 4224,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run_ak": {
+    "row": 67,
+    "y": 4288,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "dash_ak": {
+    "row": 68,
+    "y": 4352,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "idle_axe": {
+    "row": 69,
+    "y": 4416,
+    "frames": 4,
+    "fps": 4,
+    "loop": true
+   },
+   "jump_axe": {
+    "row": 70,
+    "y": 4480,
+    "frames": 1,
+    "fps": 8,
+    "loop": false
+   },
+   "fall_axe": {
+    "row": 71,
+    "y": 4544,
+    "frames": 1,
+    "fps": 8,
+    "loop": true
+   },
+   "land_axe": {
+    "row": 72,
+    "y": 4608,
+    "frames": 1,
+    "fps": 12,
+    "loop": false
+   },
+   "walk_axe": {
+    "row": 73,
+    "y": 4672,
+    "frames": 8,
+    "fps": 11,
+    "loop": true
+   },
+   "run_axe": {
+    "row": 74,
+    "y": 4736,
+    "frames": 8,
+    "fps": 15,
+    "loop": true
+   },
+   "dash_axe": {
+    "row": 75,
+    "y": 4800,
+    "frames": 3,
+    "fps": 20,
+    "loop": false
+   },
+   "cast_axe": {
+    "row": 76,
+    "y": 4864,
+    "frames": 6,
+    "fps": 17,
+    "loop": false,
+    "fw": 128,
+    "fh": 128,
+    "ax": 64,
+    "ay": 92
+   }
+  }
+ },
+ "muzzle": {
+  "front": [
+   -2,
+   5
+  ],
+  "back": [
+   6,
+   26
+  ],
+  "side": [
+   29,
+   17
+  ]
+ },
+ "portrait_size": [
+  44,
+  44
+ ],
+ "portraits": [
+  "neutral",
+  "smile",
+  "happy",
+  "wink",
+  "hurt",
+  "surprised"
+ ],
+ "license": "Universal LPC Spritesheet (CC-BY-SA 3.0 / GPL 3.0 / OGA-BY 3.0), \u0441\u043c. assets/CREDITS-LPC.txt"
+}
