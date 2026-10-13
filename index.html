@@ -57,32 +57,30 @@
   <!-- Сенсорное управление -->
   <div id="touch" class="hidden">
     <div class="joy-zone" data-joy-zone></div>
-    <div class="joy-base pixel-btn" data-joy-base><div class="joy-knob pixel-btn" data-joy-knob></div></div>
+    <!-- Стик слева: до кольца — ходьба, вытянул до острых концов — бег -->
+    <div class="joy-base" data-joy-base aria-hidden="true">
+      <i class="joy-spike s0"></i><i class="joy-spike s1"></i><i class="joy-spike s2"></i><i class="joy-spike s3"></i>
+      <div class="joy-ring round"></div>
+      <div class="joy-knob round" data-joy-knob></div>
+    </div>
     <div class="pad">
-      <button class="pad-btn pixel-btn weapon" data-action="switch" data-mode="world" aria-label="Сменить оружие">
-        <svg class="ico-ak" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11h15l3-2h2v3h-4l-1 1h-4l-1 4h-3l1-4H2z"/></svg>
-        <svg class="ico-axe hidden" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20L15 10M13 5c3-2 7 0 7 4l-4 1-3-2z"/></svg>
-      </button>
-      <button class="pad-btn pixel-btn dash" data-action="dash" data-mode="world" aria-label="Рывок">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg>
-      </button>
-      <button class="pad-btn pixel-btn sprint" data-action="sprint" data-mode="world" aria-label="Бег: держи нажатой">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L6 13h5l-1 8 7-10h-5z"/></svg>
-      </button>
-      <button class="pad-btn pixel-btn super" data-action="super" data-mode="world" aria-label="Суперудар: заряжается убийствами">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-.5z"/></svg>
-      </button>
-      <button class="pad-btn pixel-btn swap" data-action="swap" data-mode="trial" aria-label="Сменить героя">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>
-      </button>
-      <button class="pad-btn pixel-btn jump" data-action="jump" aria-label="Прыжок">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14l6-6 6 6M6 19l6-6 6 6"/></svg>
-      </button>
-      <button class="pad-btn pixel-btn shoot" data-action="shoot" data-mode="world" aria-label="Стрельба и прицел: зажми и веди пальцем">
+      <button class="pad-btn round-btn shoot" data-action="shoot" data-mode="world" aria-label="Стрельба и прицел: зажми и веди пальцем">
         <span class="aim-ring" aria-hidden="true"></span>
         <span class="aim-knob" data-aim-knob aria-hidden="true">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
         </span>
+      </button>
+      <button class="pad-btn round-btn jump" data-action="jump" aria-label="Прыжок">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14l6-6 6 6M6 19l6-6 6 6"/></svg>
+      </button>
+      <button class="pad-btn round-btn dash" data-action="dash" data-mode="world" aria-label="Рывок">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg>
+      </button>
+      <button class="pad-btn round-btn super" data-action="super" data-mode="world" aria-label="Суперудар: заряжается убийствами">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-.5z"/></svg>
+      </button>
+      <button class="pad-btn round-btn swap" data-action="swap" data-mode="trial" aria-label="Сменить героя">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>
       </button>
     </div>
   </div>

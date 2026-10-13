@@ -52,6 +52,7 @@ async function boot() {
 
   audio.init();
   input = new Input({ canvas, touchRoot: document.getElementById('touch'), screenToWorld: (x, y) => view.screenToWorld(x, y) });
+  ui.onWeaponSlot((i) => input.press('slot' + (i + 1)));
   if (window.matchMedia?.('(pointer: coarse)').matches) ui.setTouch(true);
   window.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'touch' && !document.body.classList.contains('touch')) {
@@ -143,6 +144,13 @@ function startGame() {
   ui.setHeartsVisible(true);
   ui.setSub('');
   game.victoryT = 0;
+  // Один раз за сеанс подсказываем, как бежать на телефоне.
+  if (!game.runHinted) {
+    game.runHinted = true;
+    setTimeout(() => {
+      if (document.body.classList.contains('touch') && game.mode === 'world' && !ui.modalOpen) ui.toast('Тяни стик до острых концов, и герой побежит', 3600);
+    }, 6000);
+  }
   persist();
   if (!game.world.kingDead) ui.toast('Орда зомби! Убей короля в короне, и все рассыплются', 4200);
   else if (!game.save.trials.fireWater.done) ui.toast('Испытание ждёт у ворот на северо-востоке', 3200);

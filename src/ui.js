@@ -189,6 +189,8 @@ export class UI {
     ctx.drawImage(src, r.x, r.y, r.w, r.h, Math.floor((15 - r.w) / 2), 15 - r.h, r.w, r.h);
   }
 
+  onWeaponSlot(cb) { this.onSlot = cb; }
+
   // Картинка оружия и прямоугольники {x, y, w, h} для окна оружия сверху.
   setWeaponArt(img, rects) { this.weaponArt = { img, rects }; this.slotsKey = ''; }
 
@@ -205,6 +207,8 @@ export class UI {
         const slot = document.createElement('div');
         slot.className = 'wslot';
         slot.dataset.weapon = id;
+        // Касание или клик по ячейке выбирает это оружие.
+        slot.addEventListener('pointerdown', (e) => { e.preventDefault(); this.onSlot?.(i); });
         const r = this.weaponArt?.rects[id];
         if (r) {
           // Целый масштаб, чтобы пиксели остались квадратными; ячейка 50×28.
@@ -246,8 +250,6 @@ export class UI {
     wb.classList.toggle('hidden', wood <= 0);
     $('wood-count').textContent = String(wood);
     if (wood > prevWood) { wb.classList.remove('bump'); void wb.offsetWidth; wb.classList.add('bump'); }
-    document.querySelectorAll('.pad .weapon .ico-ak').forEach((e) => e.classList.toggle('hidden', weaponId !== 'ak'));
-    document.querySelectorAll('.pad .weapon .ico-axe').forEach((e) => e.classList.toggle('hidden', weaponId !== 'axe'));
   }
 
   hideInventory() {

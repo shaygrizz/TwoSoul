@@ -1,6 +1,6 @@
 // Service worker: офлайн-кэш. При каждом обновлении игры увеличивай VERSION,
 // тогда старый кэш удалится и игроки получат новую версию.
-const VERSION = 'vdvoem-v20';
+const VERSION = 'vdvoem-v21';
 const FILES = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
   'lib/three.module.min.js', 'lib/three.core.min.js',

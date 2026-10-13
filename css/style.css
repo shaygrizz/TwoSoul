@@ -228,20 +228,50 @@ body.touch .desktop-only { display: none; }
   filter: drop-shadow(2px 2px 0 var(--shadow)); }
 .icon-btn svg { width: 22px; height: 22px; }
 
-/* Сенсорное управление */
+/* Сенсорное управление: слева стик, справа огонь, прыжок, рывок и суперудар.
+   Круглые кнопки — «пиксельные круги»: ступенчатый срез, цветная рамка и плоская тень. */
 #touch { position: fixed; inset: 0; z-index: 12; pointer-events: none; }
 .joy-zone { position: absolute; left: 0; top: 25%; bottom: 0; width: 55%; pointer-events: auto; touch-action: none; }
+
+:root {
+  --pc: polygon(28% 0, 72% 0, 72% 4%, 84% 4%, 84% 10%, 92% 10%, 92% 16%, 96% 16%, 96% 28%, 100% 28%,
+    100% 72%, 96% 72%, 96% 84%, 92% 84%, 92% 90%, 84% 90%, 84% 96%, 72% 96%, 72% 100%,
+    28% 100%, 28% 96%, 16% 96%, 16% 90%, 8% 90%, 8% 84%, 4% 84%, 4% 72%, 0 72%, 0 28%,
+    4% 28%, 4% 16%, 8% 16%, 8% 10%, 16% 10%, 16% 4%, 28% 4%);
+}
+.round, .round-btn {
+  --btn-bg: #3a2c5e; --btn-lit: #5a4690; --btn-edge: #f4e3c1;
+  position: absolute; filter: drop-shadow(0 6px 0 var(--shadow));
+}
+.round::before, .round-btn::before { content: ''; position: absolute; inset: 0; background: var(--btn-edge); clip-path: var(--pc); }
+.round::after, .round-btn::after {
+  content: ''; position: absolute; inset: 4px; clip-path: var(--pc);
+  background: linear-gradient(var(--btn-lit) 0 5px, var(--btn-bg) 5px);
+}
+.round-btn { background: none; border: 0; padding: 0; color: #fff; }
+.round-btn svg {
+  position: relative; z-index: 1; width: 48%; height: 48%; fill: none; stroke: currentColor; stroke-width: 2.6;
+  stroke-linecap: square; stroke-linejoin: miter; filter: drop-shadow(2px 2px 0 var(--shadow));
+}
+
+/* Стик: кольцо, четыре острых конца и ручка. Появляется там, где коснулся, а в покое стоит в углу. */
 .joy-base {
-  position: absolute; left: 0; top: 0; width: 100px; height: 100px;
-  display: none; pointer-events: none;
-  --btn-bg: rgba(40, 30, 70, 0.55);
+  position: absolute; left: calc(14px + var(--sal)); bottom: calc(10px + var(--sab)); width: 140px; height: 140px;
+  pointer-events: none; opacity: 0.8;
 }
-.joy-base.on { display: block; }
-.joy-knob {
-  position: absolute; left: 30px; top: 30px; width: 40px; height: 40px;
-  --btn-bg: #c2406b; --btn-lit: #ff6f9c;
+.joy-base.on { opacity: 1; }
+.joy-ring { left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; --btn-edge: #8b6bd1; --btn-bg: #2a2145; --btn-lit: #3a2c5e; }
+.joy-knob { left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; --btn-bg: #c2406b; --btn-lit: #ff6f9c; --btn-edge: #ffd6e4; transition: transform 40ms linear; }
+.joy-spike {
+  position: absolute; left: calc(50% - 9px); top: 4px; width: 18px; height: 32px; transform-origin: 9px 66px;
+  background: #6b5a9a; clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
-.pad { position: absolute; right: calc(16px + var(--sar)); bottom: calc(18px + var(--sab)); width: 196px; height: 196px; pointer-events: none; }
+.joy-spike.s1 { transform: rotate(90deg); }
+.joy-spike.s2 { transform: rotate(180deg); }
+.joy-spike.s3 { transform: rotate(270deg); }
+.joy-base.run .joy-spike { background: #ffd451; }
+
+.pad { position: absolute; inset: 0; pointer-events: none; }
 .pad-btn {
   position: absolute; pointer-events: auto; touch-action: none;
   padding: 0;
@@ -249,28 +279,24 @@ body.touch .desktop-only { display: none; }
   transition: transform 80ms steps(2);
 }
 .pad-btn.down { transform: translateY(4px); --btn-bg: #5a4690; --btn-edge: #ffffff; }
-/* Правый большой палец: стрельба-прицел в углу, прыжок слева от неё, рывок сверху. */
-.pad .shoot { right: 0; bottom: 0; width: 96px; height: 96px; --btn-bg: #8a3558; --btn-lit: #c2406b; }
-.pad .jump { right: 108px; bottom: 8px; width: 72px; height: 72px; }
-.pad .dash { right: 104px; bottom: 96px; width: 56px; height: 56px; }
-.pad .weapon { right: 20px; bottom: 112px; width: 58px; height: 58px; }
-.pad .sprint { right: 188px; bottom: 18px; width: 60px; height: 60px; --btn-bg: #2f6a58; --btn-lit: #4aa386; }
-.pad .sprint.down { --btn-bg: #4aa386; }
-.pad .weapon svg { width: 58%; height: 58%; }
-.pad .swap { right: 108px; bottom: 8px; width: 72px; height: 72px; }
-#touch.trial .pad .jump { right: 0; bottom: 0; width: 96px; height: 96px; }
+.pad .shoot { right: calc(138px + var(--sar)); bottom: calc(46px + var(--sab)); width: 104px; height: 104px; --btn-bg: #8a3558; --btn-lit: #c2406b; }
+.pad .jump { right: calc(40px + var(--sar)); bottom: calc(150px + var(--sab)); width: 64px; height: 64px; }
+.pad .dash { right: calc(150px + var(--sar)); bottom: calc(166px + var(--sab)); width: 54px; height: 54px; }
+.pad .super { right: calc(252px + var(--sar)); bottom: calc(62px + var(--sab)); width: 58px; height: 58px; }
+.pad .swap { right: calc(150px + var(--sar)); bottom: calc(40px + var(--sab)); width: 72px; height: 72px; }
+#touch.trial .pad .jump { right: calc(30px + var(--sar)); bottom: calc(40px + var(--sab)); width: 96px; height: 96px; }
 #touch.trial [data-mode="world"], #touch.world [data-mode="trial"] { display: none; }
 
 /* Ручка прицела внутри кнопки стрельбы. */
-.aim-ring { position: absolute; inset: 14px; border: 2px dashed rgba(255, 255, 255, 0.45); pointer-events: none; }
+.aim-ring { position: absolute; z-index: 1; inset: 14px; border: 2px dashed rgba(255, 255, 255, 0.45); pointer-events: none; }
 .aim-knob {
-  position: relative; width: 44px; height: 44px;
+  position: relative; z-index: 1; width: 44px; height: 44px;
   display: grid; place-items: center; pointer-events: none;
   background: #f4e3c1;
   box-shadow: 0 4px 0 0 var(--shadow), inset 0 -4px 0 0 #c9b48c;
   transition: transform 90ms steps(3);
 }
-.aim-knob svg { width: 26px; height: 26px; fill: none; stroke: #3a2c5e; stroke-width: 2.6; stroke-linecap: square; }
+.aim-knob svg { width: 28px; height: 28px; fill: #3a2c5e; stroke: none; filter: none; }
 .pad .shoot.aiming .aim-knob { transition: none; background: #ffb3c9; }
 
 @media (max-width: 420px) {
@@ -315,7 +341,6 @@ body.aiming #game { cursor: none; }
 @keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } }
 .btn, .icon-btn { transition: transform 80ms steps(2); }
 .btn:hover, .icon-btn:hover { filter: brightness(1.08); }
-.joy-knob { transition: transform 40ms linear; }
 .btn:hover, .hero-card:hover { filter: brightness(1.12); }
 #fade { position: fixed; inset: 0; z-index: 35; background: #0e1a12; opacity: 0; pointer-events: none; transition: opacity 220ms ease; }
 #fade.on { opacity: 1; pointer-events: auto; }
@@ -344,9 +369,27 @@ body.aiming #game { cursor: none; }
 .super-key { font-size: 12px; margin-left: 4px; padding: 1px 5px; color: #3a2c5e; background: #f4e3c1; box-shadow: 0 2px 0 0 var(--shadow); opacity: 0.55; }
 .super-bar.ready .super-key { opacity: 1; }
 body.touch .super-key { display: none; }
-.pad .super { right: 176px; bottom: 88px; width: 58px; height: 58px; --btn-bg: #4a3a86; --btn-lit: #6b57b8; opacity: 0.55; }
+.pad .super { --btn-bg: #4a3a86; --btn-lit: #6b57b8; opacity: 0.55; }
 .pad .super svg { width: 60%; height: 60%; fill: #9d8bd6; stroke: none; }
-.pad .super.ready { opacity: 1; --btn-bg: #b8862a; --btn-lit: #ffd451; animation: super-pulse 0.5s steps(2) infinite; }
+.pad .super.ready { opacity: 1; --btn-bg: #b8862a; --btn-lit: #ffd451; animation: super-btn-pulse 0.5s steps(2) infinite; }
+@keyframes super-btn-pulse { 50% { filter: drop-shadow(0 6px 0 var(--shadow)) brightness(1.45); } }
 .pad .super.ready svg { fill: #fff3b0; }
 @keyframes super-pulse { 50% { filter: brightness(1.45); } }
 @media (prefers-reduced-motion: reduce) { .super-bar.ready .pip, .pad .super.ready { animation: none; } }
+
+/* Панель оружия на телефоне: крупнее и нажимается (выбор оружия касанием) */
+.wslot { cursor: pointer; }
+body.touch .weapon-slots { pointer-events: auto; gap: 12px; }
+body.touch .wslot { width: 78px; height: 48px; }
+body.touch .wslot canvas { transform: scale(1.3); }
+body.touch .weapon-name { font-size: 16px; }
+
+/* Узкий экран (телефон вертикально): кнопки правее, чтобы не наезжать на стик */
+@media (max-width: 560px) {
+  .pad .shoot { right: calc(16px + var(--sar)); bottom: calc(40px + var(--sab)); }
+  .pad .jump { right: calc(36px + var(--sar)); bottom: calc(160px + var(--sab)); }
+  .pad .dash { right: calc(118px + var(--sar)); bottom: calc(160px + var(--sab)); }
+  .pad .super { right: calc(134px + var(--sar)); bottom: calc(56px + var(--sab)); }
+  .pad .swap { right: calc(130px + var(--sar)); bottom: calc(40px + var(--sab)); }
+  #touch.trial .pad .jump { right: calc(20px + var(--sar)); bottom: calc(40px + var(--sab)); }
+}

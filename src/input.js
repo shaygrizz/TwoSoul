@@ -12,7 +12,7 @@ export class Input {
   constructor({ canvas, touchRoot, screenToWorld }) {
     this.held = new Set();
     this.pressed = new Set();   // нажатия с прошлого шага (для прыжка, рывка, смены)
-    this.joy = { id: null, ox: 0, oy: 0, x: 0, y: 0 };
+    this.joy = { id: null, ox: 0, oy: 0, x: 0, y: 0, run: false };
     this.touchHeld = new Set();
     this.mouseDown = false;
     this.mousePos = null;
@@ -68,7 +68,10 @@ export class Input {
     const zone = root.querySelector('[data-joy-zone]');
     const base = root.querySelector('[data-joy-base]');
     const knob = root.querySelector('[data-joy-knob]');
-    const R = 44; // радиус джойстика в CSS-пикселях
+    const R = 40;                       // радиус кольца: до него — ходьба
+    const RUN_ON = 49, RUN_OFF = 43;    // за кольцом, у острых концов, — бег (с запасом, чтобы не дрожало)
+    const RMAX = 62;                    // дальше острых концов ручка не уходит
+    const HALF = 70;                    // половина размера основания стика
 
     this.on(zone, 'pointerdown', (e) => {
       if (this.joy.id !== null) return;
@@ -79,25 +82,32 @@ export class Input {
       this.joy.id = e.pointerId;
       this.joy.ox = e.clientX; this.joy.oy = e.clientY;
       this.joy.x = 0; this.joy.y = 0;
-      base.style.transform = `translate(${e.clientX - 50}px, ${e.clientY - 50}px)`;
+      base.style.left = (e.clientX - HALF) + 'px';
+      base.style.top = (e.clientY - HALF) + 'px';
+      base.style.bottom = 'auto';
       knob.style.transform = 'translate(0px, 0px)';
       base.classList.add('on');
     });
     const move = (e) => {
       if (e.pointerId !== this.joy.id) return;
-      let dx = e.clientX - this.joy.ox, dy = e.clientY - this.joy.oy;
+      const dx = e.clientX - this.joy.ox, dy = e.clientY - this.joy.oy;
       const l = Math.hypot(dx, dy);
-      if (l > R) { dx = (dx / l) * R; dy = (dy / l) * R; }
-      knob.style.transform = `translate(${dx}px, ${dy}px)`;
-      // dx, dy уже ограничены радиусом, поэтому вектор не длиннее 1.
-      const dead = Math.min(1, l / R) < 0.18;
-      this.joy.x = dead ? 0 : dx / R;
-      this.joy.y = dead ? 0 : dy / R;
+      const k = l > RMAX ? RMAX / l : 1;
+      knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+      // Ходьба: вектор растёт до края кольца и дальше не длиннее 1. Бег: ручка дотянута до острых концов.
+      const v = Math.min(1, l / R);
+      const dead = v < 0.18;
+      this.joy.x = dead ? 0 : (dx / l) * v;
+      this.joy.y = dead ? 0 : (dy / l) * v;
+      if (l > RUN_ON) this.joy.run = true; else if (l < RUN_OFF) this.joy.run = false;
+      base.classList.toggle('run', this.joy.run);
     };
     const end = (e) => {
       if (e.pointerId !== this.joy.id) return;
-      this.joy.id = null; this.joy.x = 0; this.joy.y = 0;
-      base.classList.remove('on');
+      this.joy.id = null; this.joy.x = 0; this.joy.y = 0; this.joy.run = false;
+      base.classList.remove('on', 'run');
+      base.style.left = base.style.top = base.style.bottom = '';   // стик возвращается в угол
+      knob.style.transform = '';
     };
     this.on(zone, 'pointermove', move);
     this.on(zone, 'pointerup', end);
@@ -148,6 +158,9 @@ export class Input {
   // Направление прицела с сенсорной кнопки или null (тогда автоприцел).
   aimDir() { return this.stick.id !== null ? this.stick.dir : null; }
 
+  // Нажатие «извне» (например, касание ячейки оружия в панели).
+  press(a) { this.pressed.add(a); }
+
   isHeld(a) { return this.held.has(a) || this.touchHeld.has(a); }
 
   // Снимок ввода для одного шага логики. Нажатия «съедаются».
@@ -167,7 +180,7 @@ export class Input {
       mx, my, aim, aimDir: this.aimDir(),
       jump: this.pressed.has('jump'),
       dash: this.pressed.has('dash'),
-      sprint: this.isHeld('sprint'),
+      sprint: this.isHeld('sprint') || this.joy.run,
       shoot: this.isHeld('shoot') || this.pressed.has('shoot') || this.mouseDown,
       swap: this.pressed.has('swap'),
       switchWeapon: this.pressed.has('switch'),
@@ -182,7 +195,9 @@ export class Input {
   reset() {
     this.held.clear(); this.pressed.clear(); this.touchHeld.clear();
     this.mouseDown = false;
-    this.joy.id = null; this.joy.x = 0; this.joy.y = 0;
+    this.joy.id = null; this.joy.x = 0; this.joy.y = 0; this.joy.run = false;
+    document.querySelectorAll('[data-joy-base]').forEach((b) => { b.classList.remove('on', 'run'); b.style.left = b.style.top = b.style.bottom = ''; });
+    document.querySelectorAll('[data-joy-knob]').forEach((k) => { k.style.transform = ''; });
     this.stick.id = null; this.stick.dir = null;
     document.querySelectorAll('[data-aim-knob]').forEach((k) => { k.style.transform = ''; });
     document.querySelectorAll('.down').forEach((b) => b.classList.remove('down'));
